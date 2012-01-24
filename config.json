@@ -1,0 +1,119 @@
+{
+    "servers": {
+        "example": {
+            "path"        : "/the/absolute/path/to/the/server/root",
+            "launch"      : "java -server -Xincgc -Xmx1G -jar CraftBukkit.jar",
+            "timeout"     : 60,
+            "log-size"    : 20,
+            "log-path"    : "/the/absolute/path/to/the/server/root/logs",
+            "backup-max"  : 50,
+            "backup-path" : "/the/absolute/path/to/the/server/root/backup",
+            "backup-paths": ["plugins", "world", "world_nether"],
+            "packages": [
+                "CraftBukkit", "CraftIRC",    "dynmap",
+                "LWC",         "LogBlock",    "Minequery",
+                "NoCheat",     "Permissions", "PermissionsEx",
+                "Spout",       "WorldEdit",   "WorldGuard"
+            ]
+        }
+    },
+    
+    "packages": {
+        "CraftBukkit": {
+            "version": null,
+            "path"   : null,
+            "type"   : "jar",
+            "url"    : "http://ci.bukkit.org/job/dev-CraftBukkit/",
+            "updater": "jenkins"
+        },
+        
+        "CraftIRC": {
+            "version": null,
+            "path"   : "plugins",
+            "type"   : "jar",
+            "url"    : "http://ensifera.com:8080/job/CraftIRC%203/",
+            "updater": "jenkins"
+        },
+        
+        "dynmap": {
+            "version": null,
+            "path"   : "plugins",
+            "type"   : "jar",
+            "url"    : "http://webbukkit.org:8080/job/dynmap/",
+            "updater": "jenkins"
+        },
+        
+        "LWC": {
+            "version": null,
+            "path"   : "plugins",
+            "type"   : "jar",
+            "url"    : "http://ci.griefcraft.com/job/LWC/",
+            "updater": "jenkins"
+        },
+        
+        "LogBlock": {
+            "version": null,
+            "path"   : "plugins",
+            "type"   : "jar",
+            "url"    : "http://diddiz.insane-architects.net:8080/job/LogBlock/",
+            "updater": "jenkins"
+        },
+        
+        "Minequery": {
+            "version": null,
+            "path"   : "plugins",
+            "type"   : "zip",
+            "url"    : "http://dev.bukkit.org/server-mods/minequery/",
+            "updater": "bukkitdev",
+            "extract": ["Minequery.jar"]
+        },
+        
+        "NoCheat": {
+            "version": null,
+            "path"   : "plugins",
+            "type"   : "jar",
+            "url"    : "http://dev.bukkit.org/server-mods/nocheat/",
+            "updater": "bukkitdev"
+        },
+        
+        "Permissions": {
+            "version": null,
+            "path"   : "plugins",
+            "type"   : "jar",
+            "url"    : "http://webbukkit.org:8080/job/PermissionsCompat/",
+            "updater": "jenkins"
+        },
+        
+        "PermissionsEx": {
+            "version": null,
+            "path"   : "plugins",
+            "type"   : "jar",
+            "url"    : "http://webbukkit.org:8080/job/PermissionsEx/",
+            "updater": "jenkins"
+        },
+        
+        "Spout": {
+            "version": null,
+            "path"   : "plugins",
+            "type"   : "jar",
+            "url"    : "http://ci.spout.org/job/SpoutPlugin/",
+            "updater": "jenkins"
+        },
+        
+        "WorldEdit": {
+            "version": null,
+            "path"   : "plugins",
+            "type"   : "jar",
+            "url"    : "http://build.sk89q.com/job/WorldEdit/",
+            "updater": "jenkins"
+        },
+        
+        "WorldGuard": {
+            "version": null,
+            "path"   : "plugins",
+            "type"   : "jar",
+            "url"    : "http://build.sk89q.com/job/WorldGuard/",
+            "updater": "jenkins"
+        }
+    }
+}
