@@ -4,7 +4,7 @@ import os
 
 log = logging.getLogger("config")
 
-def _merge_dicts(self, dict1, dict2):
+def _merge_dicts(dict1, dict2):
     if not dict1 or not dict2:
         return
     
@@ -75,7 +75,7 @@ class Config:
         
         for name in self.__config['servers']:
             server = self.__config['servers'][name]
-            server = self._merge_dicts(self.server_new(), server)
+            server = _merge_dicts(self.server_new(), server)
             
             servers[name] = server
         
@@ -86,7 +86,7 @@ class Config:
         
         for name in self.__config['packages']:
             package = self.__config['packages'][name]
-            package = self._merge_dicts(self.package_new(), package)
+            package = _merge_dicts(self.package_new(), package)
             
             packages[name] = package
         
@@ -118,7 +118,7 @@ class Config:
             return self.server_new()
         
         srv = self.__config['servers'][server]
-        srv = self._merge_dicts(self.server_new(), srv)
+        srv = _merge_dicts(self.server_new(), srv)
         
         return srv
     
@@ -129,9 +129,7 @@ class Config:
         if not self.__config:
             return
         
-        srv = self.server_new()
-        srv = self._merge_dicts(srv, server)
-        
+        srv = _merge_dicts(self.server_new(), server)
         self.__config['servers'][name] = srv
     
     def server_remove(self, server):
@@ -167,7 +165,7 @@ class Config:
             return self.package_new()
         
         pkg = self.__config['packages'][package]
-        pkg = self._merge_dicts(self.package_new(), pkg)
+        pkg = _merge_dicts(self.package_new(), pkg)
         
         return pkg
     
@@ -178,9 +176,7 @@ class Config:
         if not self.__config:
             return
         
-        pkg = self.package_new()
-        pkg = self._merge_dicts(pkg, package)
-        
+        pkg = _merge_dicts(self.package_new(), package)
         self.__config['packages'][name] = pkg
     
     def package_remove(self, package):
