@@ -2,12 +2,28 @@ import logging
 import os
 import re
 import shlex
+import socket
+import struct
 import time
 
+
+from asyncore   import dispatcher
 from package    import Package
+from signal     import SIGINT
 from subprocess import Popen, PIPE
 
 log = logging.getLogger("server")
+
+def _execute_command(command, quiet = True):
+    args = shlex.split(str(command))
+    
+    if quiet:
+        p = Popen(args, 0, None, PIPE, PIPE, PIPE)
+    else:
+        p = Popen(args)
+    
+    p.wait()
+    return p.stdout.read() if quiet else None
 
 def _screen_exists(name):
     ret   = _execute_command("screen -ls")
@@ -25,19 +41,159 @@ def _screen_join(name):
     _execute_command("screen -S %s -x" % name, False)
 
 def _screen_command_send(name, command):
-    _execute_command(
-        "screen -S %s -p 0 -X stuff '%s\n'" % (name, command))
+    _execute_command("screen -S %s -p 0 -X stuff '%s\n'" % (name, command))
 
-def _execute_command(command, quiet = True):
-    args = shlex.split(str(command))
+class _FakeChannel(dispatcher):
+    def __init__(self, sock, ping, kick):
+        dispatcher.__init__(self, sock)
+        
+        self.__ping = ping
+        self.__kick = kick
     
-    if quiet:
-        p = Popen(args, 0, None, PIPE, PIPE, PIPE)
-    else:
-        p = Popen(args)
+    def handle_read(self):
+        data = self.recv(256)
+        
+        if len(data) < 1:
+            return
+        
+        if data[0] == '\xFE':
+            self.send(self.__ping)
+            return
+        
+        addr, port = self.addr
+        
+        log.info("%s [%s:%d] attempted to join", data, addr, port)
+        
+        self.send(self.__kick)
     
-    p.wait()
-    return p.stdout.read() if quiet else None
+    def handle_close(self):
+        self.close()
+
+class FakeServer(dispatcher):
+    def __init__(self, addr = None, port = 25565, motd = None, message = None):
+        addr    = addr    if addr    else "0.0.0.0"
+        port    = port    if port    else 25565
+        motd    = motd    if motd    else "Server Offline"
+        message = message if message else "The server is currently offline"
+        
+        self.__ping = "\xFF%s%s%s" % (
+            struct.pack(">h", (len(motd) + 4)),
+            motd.encode("UTF-16BE"),
+            "\x00\xA7\x00\x30\x00\xA7\x00\x30",
+        )
+        
+        self.__kick = "\xFF%s%s" % (
+            struct.pack(">h", len(message)),
+            message.encode("UTF-16BE")
+        )
+        
+        dispatcher.__init__(self)
+        self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
+        
+        try:
+            self.bind((addr, port))
+            self.listen(5)
+        except socket.error, msg:
+            self.close()
+            
+            log.critical("Unable to start fake server: %s", msg)
+            return
+        
+        log.info("Fake server started on %s:%d", addr, port)
+    
+    def handle_accept(self):
+        pair = self.accept()
+        
+        if not pair:
+            return
+        
+        sock, addr = pair
+        
+        _FakeChannel(sock, self.__ping, self.__kick)
+    
+    def handle_close(self):
+        self.close()
+    
+    @staticmethod
+    def pidfile(server):
+        path = os.path.join("~", ".mctl", "run", "%s-fake.pid" % server)
+        path = os.path.expanduser(path)
+        
+        return path
+    
+    @staticmethod
+    def running(server):
+        pidfile = FakeServer.pidfile(server)
+        
+        if not os.path.exists(pidfile):
+            return False
+        
+        try:
+            fp = open(pidfile, "r")
+        except IOError, msg:
+            return False
+        
+        try:
+            pid = int(fp.read())
+        except:
+            pid = 0
+        
+        fp.close()
+        
+        if not pid:
+            return False
+        
+        try:
+            os.kill(pid, 0)
+        except OSError, msg:
+            return False
+        
+        return True
+    
+    @staticmethod
+    def kill(server):
+        pidfile = FakeServer.pidfile(server)
+        
+        try:
+            fp = open(pidfile, "r")
+        except IOError, msg:
+            return False
+        
+        try:
+            pid = int(fp.read())
+        except:
+            pid = 0
+        
+        fp.close()
+        os.remove(pidfile)
+        
+        if not pid:
+            return False
+        
+        try:
+            os.kill(pid, SIGINT)
+        except OSError, msg:
+            log.error("Unable to kill process (%d): %s", pid, msg)
+            return False
+        
+        return True
+
+def PFakeServer(server, addr = None, port = 25565, motd = None, message = None):
+    if not server:
+        return
+    
+    addr    = addr      if addr    else "0.0.0.0"
+    port    = int(port) if port    else 25565
+    motd    = motd      if motd    else "Server Offline"
+    message = message   if message else "The server is currently offline"
+    
+    name = "mctl-fake-%s" % (server)
+    cmd  = "%s --server=%s --addr=%s --port=%d --motd='%s' --message='%s'" % (
+        "mctl-fake", server, addr, port, motd, message
+    )
+    
+    _screen_new(name, cmd)
+    #_execute_command(cmd, False)
 
 class Server:
     def __init__(self, name, server):
@@ -52,7 +208,7 @@ class Server:
         self.backup_paths = server['backup-paths']
         self.packages     = server['packages']
         
-        self.screen_name = "mcctl-%s" % (name)
+        self.screen_name = "mctl-%s" % (name)
         
     def command(self, command):
         _screen_command_send(self.screen_name, command)
@@ -76,12 +232,21 @@ class Server:
         config.save()
         return config
     
-    def start(self):
+    def start(self, force = False):
         cwd = os.getcwd()
+        
+        if FakeServer.running(self.server):
+            if force:
+                self.stop_fake()
+            else:
+                log.error("fake server is running")
+                return
         
         if _screen_exists(self.screen_name):
             log.error("server already running")
             return
+        
+        log.info("starting server...")
         
         os.chdir(self.path)
         _screen_new(self.screen_name, self.launch)
@@ -91,6 +256,8 @@ class Server:
         if not _screen_exists(self.screen_name):
             log.error("server it not running")
             return
+        
+        log.info("stopping server...")
         
         if message:
             self.command('say %s' % (message))
@@ -115,3 +282,50 @@ class Server:
     def restart(self, message = None):
         self.stop(message)
         self.start()
+    
+    def start_fake(self, motd = None, message = None, force = False):
+        if _screen_exists(self.screen_name):
+            if force:
+                self.stop(message)
+            else:
+                log.error("server is running")
+                return
+        
+        if FakeServer.running(self.server):
+            log.error("fake server already running")
+            return
+        
+        path = os.path.join(self.path, "server.properties")
+        
+        try:
+            fp = open(path, "r")
+        except IOError, msg:
+            log.warning("Unable to open: %s: %s", path, msg)
+            return
+        
+        data = fp.read()
+        fp.close()
+        
+        match = re.search("^server-ip=(.*)$", data, re.MULTILINE)
+        
+        if not match:
+            return
+        
+        addr  = match.group(1)
+        match = re.search("^server-port=(\d+)$", data, re.MULTILINE)
+        
+        if not match:
+            return
+        
+        port = match.group(1)
+        
+        log.info("starting fake server...")
+        PFakeServer(self.server, addr, port, motd, message)
+    
+    def stop_fake(self):
+        if not FakeServer.running(self.server):
+            log.error("fake server it not running")
+            return
+        
+        log.info("stopping fake server...")
+        FakeServer.kill(self.server)

@@ -9,9 +9,9 @@ import sys
 sys.path.append("../mctl")
 
 from config import Config
-from server import Server
+from server import FakeServer, Server
 
-parser  = optparse.OptionParser(
+parser = optparse.OptionParser(
     usage       = "usage: %prog [OPTIONS]",
     description = "Minecraft server controller"
 )
@@ -41,12 +41,6 @@ parser.add_option(
     dest    = "package",
     metavar = "PACKAGE",
     help    = "package to apply attributes to"
-)
-parser.add_option(
-    "-e", "--fake-server",
-    action  = "store_true",
-    dest    = "fake_server",
-    help    = "apply actions and attributes to a fake server"
 )
 parser.add_option(
     "-l", "--list-servers",
@@ -96,6 +90,18 @@ sacts.add_option(
     action  = "store_true",
     dest    = "restart",
     help    = "restart the sever"
+)
+sacts.add_option(
+    "-e", "--start-fake",
+    action  = "store_true",
+    dest    = "start_fake",
+    help    = "start the fake sever"
+)
+sacts.add_option(
+    "-k", "--stop-fake",
+    action  = "store_true",
+    dest    = "stop_fake",
+    help    = "stop the fake sever"
 )
 sacts.add_option(
     "-b", "--backup",
@@ -239,13 +245,8 @@ opts, args = parser.parse_args()
 
 config = Config(opts.config)
         
-loggers = [
-    "config", "archiver", "fakeserver",
-    "mctl",   "server",   "package",
-    "util"
-]
-
-lhndr = logging.StreamHandler()
+loggers = ["config", "archiver", "mctl", "server", "package", "util"]
+lhndr   = logging.StreamHandler()
 
 for slog in loggers:
     log = logging.getLogger(slog)
@@ -368,8 +369,13 @@ if opts.update:
 if opts.stop:
     server.stop(opts.message)
 
+if opts.stop_fake:
+    server.stop_fake()
+
 if opts.start:
-    server.start()
+    server.start(opts.force)
+elif opts.start_fake:
+    server.start_fake(opts.motd, opts.message, opts.force)
 
 if opts.restart:
     server.restart(opts.message)

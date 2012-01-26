@@ -10,7 +10,7 @@ setup(
     url =          "https://github.com/jgeboski/mctl/",
     description =  "Minecraft server controller",
     packages =     ["mctl"],
-    scripts =      ["scripts/mctl"],
+    scripts =      ["scripts/mctl", "scripts/mctl-fake"],
     classifiers =  [
             "Development Status :: 3 - Alpha",
             "Environment :: Console",
