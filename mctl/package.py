@@ -35,7 +35,7 @@ class Package:
             self.path = swd
     
     def update(self, force = False):
-        if not os.path.exists(self.path):
+        if not os.path.isdir(self.path):
             try:
                 os.makedirs(self.path)
             except os.error, msg:

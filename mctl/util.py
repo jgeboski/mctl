@@ -24,7 +24,7 @@ def download(url, path):
         return False
     
     try:
-        of = open(path, "w")
+        fp = open(path, "w")
     except IOError, msg:
         ul.close()
         
@@ -38,12 +38,12 @@ def download(url, path):
         if not data:
             break
         
-        of.write(data)
+        fp.write(data)
         
         if log.level != logging.INFO:
             continue
         
-        p = (float(of.tell()) / float(size)) * 100
+        p = (float(fp.tell()) / float(size)) * 100
         p = int(floor(p))
         
         if l == p:
@@ -55,7 +55,7 @@ def download(url, path):
         l = p
     
     ul.close()
-    of.close()
+    fp.close()
     
     log.info("Downloaded: %s", url)
     return True

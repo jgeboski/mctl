@@ -99,7 +99,7 @@ signal(SIGINT,  handler)
 #signal(SIGQUIT, handler)
 #signal(SIGTERM, handler)
 
-if not os.path.exists(pidpath):
+if not os.path.isfile(pidpath):
     try:
         os.makedirs(pidpath)
     except os.error, msg:

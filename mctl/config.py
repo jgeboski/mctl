@@ -29,7 +29,7 @@ class Config:
         self.__path = os.path.expanduser(path)
     
     def load(self):
-        if not os.path.exists(self.__path):
+        if not os.path.isfile(self.__path):
             return False
         
         try:
@@ -52,7 +52,7 @@ class Config:
     def save(self):
         path = os.path.dirname(self.__path)
         
-        if not os.path.exists(path):
+        if not os.path.isdir(path):
             try:
                 os.makedirs(path)
             except os.error, msg:

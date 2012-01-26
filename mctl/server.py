@@ -4,10 +4,13 @@ import re
 import shlex
 import socket
 import struct
+import sys
 import time
 
-
 from asyncore   import dispatcher
+from bz2        import BZ2File
+from glob       import glob
+from math       import floor
 from package    import Package
 from signal     import SIGINT
 from subprocess import Popen, PIPE
@@ -125,7 +128,7 @@ class FakeServer(dispatcher):
     def running(server):
         pidfile = FakeServer.pidfile(server)
         
-        if not os.path.exists(pidfile):
+        if not os.path.isfile(pidfile):
             return False
         
         try:
@@ -246,6 +249,16 @@ class Server:
             log.error("server already running")
             return
         
+        if self.log_size and self.log_path:
+            path = os.path.join(self.path, "server.log")
+            
+            if os.path.isfile(path):
+                ssize = self.log_size * (1024 ** 2)
+                fsize = os.path.getsize(path)
+                
+                if fsize > ssize:
+                    self.__archive_file("server.log", self.log_path)
+        
         log.info("starting server...")
         
         os.chdir(self.path)
@@ -329,3 +342,74 @@ class Server:
         
         log.info("stopping fake server...")
         FakeServer.kill(self.server)
+    
+    def __archive_file(self, file, path):
+        fpath = os.path.join(self.path, file)
+        
+        if not os.path.isfile(fpath):
+            self.log.error("Unable to locate: %s", fpath)
+            return
+        
+        if not os.path.isdir(path):
+            try:
+                os.makedirs(path)
+            except os.error, msg:
+                log.error("Unable to create path: %s: %s", path, msg)
+                return False
+        
+        apath = os.path.join(self.log_path, "%s.*.bz2" % (file))
+        files = glob(apath)
+        files.sort()
+        
+        i = 1
+        
+        for fp in reversed(files):
+            fp = os.path.basename(fp)
+            match = re.match("%s\.(\d+)\.bz2" % (file), fp)
+            
+            if not match:
+                continue
+            
+            i = int(match.group(1)) + 1
+            break
+        
+        apath = os.path.join(self.log_path, "%s.%d.bz2" % (file, i))
+        bzf   = BZ2File(apath, "w")
+        
+        try:
+            fp = open(fpath, "r")
+        except IOError, msg:
+            log.error("Unable to open: %s: %s", fpath, msg)
+            bzf.close()
+            return
+        
+        fsize = os.path.getsize(fpath)
+        l     = 0
+        
+        while True:
+            data = fp.read(1024)
+            
+            if not data:
+                break
+            
+            bzf.write(data)
+            
+            if log.level != logging.INFO:
+                continue
+            
+            p = (float(fp.tell()) / float(fsize)) * 100
+            p = int(floor(p))
+            
+            if l == p:
+                continue
+            
+            sys.stdout.write("\033[2K")
+            sys.stdout.write("Compressing(%d%%): %s\r" % (p, file))
+            sys.stdout.flush()
+            l = p
+        
+        fp.close()
+        bzf.close()
+        os.remove(fpath)
+        
+        log.info("Archived: %s" % (file))
