@@ -12,6 +12,7 @@ from asyncore   import dispatcher
 from package    import Package
 from signal     import SIGINT
 from subprocess import Popen, PIPE
+from util       import fopen, unlink
 
 log = logging.getLogger("mctl")
 
@@ -39,7 +40,7 @@ def _screen_new(name, command):
     _execute_command("screen -S %s -dm %s" % (name, command))
 
 def _screen_join(name):
-    _execute_command("screen -S %s -x" % name, False)
+    _execute_command("screen -S %s -x" % (name, False))
 
 def _screen_command_send(name, command):
     _execute_command("screen -S %s -p 0 -X stuff '%s\n'" % (name, command))
@@ -97,7 +98,7 @@ class FakeServer(dispatcher):
         except socket.error, msg:
             self.close()
             
-            log.critical("Unable to start fake server: %s", msg)
+            log.critical("Failed to listen on %s:%d: %s", addr, port, msg)
             return
         
         log.info("Fake server started on %s:%d", addr, port)
@@ -117,7 +118,7 @@ class FakeServer(dispatcher):
     
     @staticmethod
     def pidfile(server):
-        path = os.path.join("~", ".mctl", "run", "%s-fake.pid" % server)
+        path = os.path.join("~", ".mctl", "run", "%s-fake.pid" % (server))
         path = os.path.expanduser(path)
         
         return path
@@ -129,9 +130,9 @@ class FakeServer(dispatcher):
         if not os.path.isfile(pidfile):
             return False
         
-        try:
-            fp = open(pidfile, "r")
-        except IOError, msg:
+        fp = fopen(pidfile, "r")
+        
+        if not fp:
             return False
         
         try:
@@ -154,10 +155,9 @@ class FakeServer(dispatcher):
     @staticmethod
     def kill(server):
         pidfile = FakeServer.pidfile(server)
+        fp      = fopen(pidfile, "r")
         
-        try:
-            fp = open(pidfile, "r")
-        except IOError, msg:
+        if not fp:
             return False
         
         try:
@@ -166,7 +166,7 @@ class FakeServer(dispatcher):
             pid = 0
         
         fp.close()
-        os.remove(pidfile)
+        unlink(pidfile)
         
         if not pid:
             return False
@@ -174,7 +174,7 @@ class FakeServer(dispatcher):
         try:
             os.kill(pid, SIGINT)
         except OSError, msg:
-            log.error("Unable to kill process (%d): %s", pid, msg)
+            log.error("Failed to kill process (%d): %s", pid, msg)
             return False
         
         return True
@@ -246,18 +246,18 @@ class Server:
             if force:
                 self.stop_fake()
             else:
-                log.error("fake server is running")
+                log.error("Failed to start server: fake server is running")
                 return
         
         if _screen_exists(self.screen_name):
-            log.error("server already running")
+            log.error("Failed to start server: server is running")
             return
         
         for archive in self.archives:
             archive = Archive(self.path, self.archives[archive])
             archive.oversized()
         
-        log.info("starting server...")
+        log.info("Starting server...")
         
         os.chdir(self.path)
         _screen_new(self.screen_name, self.launch)
@@ -265,10 +265,10 @@ class Server:
         
     def stop(self, message = None):
         if not _screen_exists(self.screen_name):
-            log.error("server it not running")
+            log.error("Failed to stop server: server is not running")
             return
         
-        log.info("stopping server...")
+        log.info("Stopping server...")
         
         if message:
             self.command('say %s' % (message))
@@ -299,19 +299,18 @@ class Server:
             if force:
                 self.stop(message)
             else:
-                log.error("server is running")
+                log.error("Failed to start fake server: server is running")
                 return
         
         if FakeServer.running(self.server):
-            log.error("fake server already running")
+            log.error("Failed to start fake server: "
+                      "fake server is running")
             return
         
         path = os.path.join(self.path, "server.properties")
+        fp   = fopen(path, "r")
         
-        try:
-            fp = open(path, "r")
-        except IOError, msg:
-            log.warning("Unable to open: %s: %s", path, msg)
+        if not fp:
             return
         
         data = fp.read()
@@ -320,23 +319,25 @@ class Server:
         match = re.search("^server-ip=(.*)$", data, re.MULTILINE)
         
         if not match:
+            log.warning("Failed to get `server-ip' from: %s", path)
             return
         
         addr  = match.group(1)
         match = re.search("^server-port=(\d+)$", data, re.MULTILINE)
         
         if not match:
+            log.warning("Failed to get `server-port' from: %s", path)
             return
         
         port = match.group(1)
         
-        log.info("starting fake server...")
+        log.info("Starting fake server...")
         PFakeServer(self.server, addr, port, motd, message)
     
     def stop_fake(self):
         if not FakeServer.running(self.server):
-            log.error("fake server it not running")
+            log.error("Failed to stop fake server: fake server is not running")
             return
         
-        log.info("stopping fake server...")
+        log.info("Stopping fake server...")
         FakeServer.kill(self.server)

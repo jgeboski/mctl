@@ -2,6 +2,8 @@ import json
 import logging
 import os
 
+from util import fopen
+
 log = logging.getLogger("mctl")
 
 def _merge_dicts(dict1, dict2):
@@ -25,10 +27,9 @@ class Versions:
         if not os.path.isfile(self.__path):
             return False
         
-        try:
-            fp = open(self.__path, "r")
-        except IOError, msg:
-            log.warning("Unable to open: %s: %s", self.__path, msg)
+        fp = fopen(self.__path, "r")
+        
+        if not fp:
             return False
         
         self.__versions = json.load(fp)
@@ -40,19 +41,9 @@ class Versions:
         return True
     
     def save(self):
-        path = os.path.dirname(self.__path)
+        fp = fopen(self.__path, "w", True)
         
-        if not os.path.isdir(path):
-            try:
-                os.makedirs(path)
-            except os.error, msg:
-                log.error("Unable to create path: %s: %s", path, msg)
-                return False
-        
-        try:
-            fp = open(self.__path, "w")
-        except IOError, msg:
-            log.error("Unable to open: %s: %s", self.__path, msg)
+        if not fp:
             return False
         
         json.dump(self.__versions, fp, indent = True)
@@ -96,10 +87,9 @@ class Config:
         if not os.path.isfile(self.__path):
             return False
         
-        try:
-            fp = open(self.__path, "r")
-        except IOError, msg:
-            log.warning("Unable to open: %s: %s", self.__path, msg)
+        fp = fopen(self.__path, "r")
+        
+        if not fp:
             return False
         
         self.__config = json.load(fp)
@@ -116,19 +106,9 @@ class Config:
         return True
     
     def save(self):
-        path = os.path.dirname(self.__path)
+        fp = fopen(self.__path, "w", True)
         
-        if not os.path.isdir(path):
-            try:
-                os.makedirs(path)
-            except os.error, msg:
-                log.error("Unable to create path: %s: %s", path, msg)
-                return False
-        
-        try:
-            fp = open(self.__path, "w")
-        except IOError, msg:
-            log.error("Unable to open: %s: %s", self.__path, msg)
+        if not fp:
             return False
         
         json.dump(self.__config, fp, indent = True)

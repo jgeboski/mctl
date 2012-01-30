@@ -3,7 +3,7 @@ import os
 import re
 import util
 
-from util    import download, url_get, url_join
+from util    import download, mkdir, url_get, url_join
 from xml.dom import minidom
 from zipfile import ZipFile
 
@@ -34,11 +34,7 @@ class Package:
             self.path = swd
     
     def update(self, version, force = False):
-        if not os.path.isdir(self.path):
-            try:
-                os.makedirs(self.path)
-            except os.error, msg:
-                log.error("Unable to create path: %s: %s", self.path, msg)
+        if not mkdir(self.path):
                 return version
         
         if self.updater == "bukkitdev":
@@ -46,9 +42,8 @@ class Package:
         elif self.updater == "jenkins":
             uver, urlh = self.__jenkins_info()
         else:
-            log.error("%s: invalud updater: %s" % (
-                self.package, self.updater
-            ))
+            log.error("Failed to update: %s: invalid updater `%s'",
+                      self.package, self.updater)
             
             return version
         
@@ -60,13 +55,14 @@ class Package:
         ))
         
         if uver and uver == version and not force:
-            log.info("%s: already up to date" % (self.package))
+            log.info("Failed to update: %s: already up to date", self.package)
             return version
         
         if not download(urlh, out):
             return version
         
-        log.info("%s: updated from %s to %s" % (self.package, version, uver))
+        log.info("Updated package: %s from %s to %s",
+                 self.package, version, uver)
         
         if self.type != "zip":
             return uver
@@ -84,7 +80,7 @@ class Package:
         
         os.chdir(cwd)
         zf.close()
-        os.remove(out)
+        unlink(out)
         
         return uver
     
@@ -117,7 +113,7 @@ class Package:
         if match:
             version = match.group(1)
         else:
-            log.warning("Unable to get version: %s: `%s'",
+            log.warning("Version extraction failed: %s: reported version `%s'",
                         self.package, version)
             
             version = None

@@ -12,6 +12,7 @@ sys.path.append("../mctl")
 
 from server import FakeServer
 from signal import signal, SIGINT, SIGQUIT, SIGTERM
+from util   import fopen, unlink
 
 parser = optparse.OptionParser(
     usage       = "usage: %prog [OPTIONS]",
@@ -47,14 +48,14 @@ attrs.add_option(
     action  = "store",
     dest    = "port",
     metavar = "PORT",
-    help    = "the port to bind to and listen on"
+    help    = "port to bind to and listen on"
 )
 attrs.add_option(
     "--motd",
     action  = "store",
     dest    = "motd",
     metavar = "MOTD",
-    help    = "Message of The Day to display"
+    help    = "message of The Day to display"
 )
 attrs.add_option(
     "--message",
@@ -85,7 +86,6 @@ if opts.kill:
     exit(1)
 
 pidfile = FakeServer.pidfile(opts.server)
-pidpath = os.path.dirname(pidfile)
 
 pid = os.getpid()
 run = True
@@ -98,17 +98,9 @@ signal(SIGINT,  handler)
 #signal(SIGQUIT, handler)
 #signal(SIGTERM, handler)
 
-if not os.path.isfile(pidpath):
-    try:
-        os.makedirs(pidpath)
-    except os.error, msg:
-        log.error("Unable to create path: %s: %s", pidpath, msg)
-        exit(1)
+fp = fopen(pidfile, "w", True)
 
-try:
-    fp = open(pidfile, "w")
-except IOError, msg:
-    log.error("Unable to open: %s: %s", pidfile, msg)
+if not fp:
     exit(1)
 
 fp.write(str(pid))
@@ -121,4 +113,4 @@ while run:
     asyncore.loop(10, False, None, 1)
 
 server.close()
-os.remove(pidfile)
+unlink(pidfile)

@@ -7,6 +7,7 @@ from bz2     import BZ2File
 from glob    import glob
 from math    import floor
 from tarfile import TarFile
+from util    import fopen, mkdir, unlink
 
 log = logging.getLogger("mctl")
 
@@ -22,12 +23,7 @@ class Archive:
         self.max_archives = archive['max-archives']
         self.paths        = archive['paths']
         
-        if not os.path.isdir(self.path):
-            try:
-                os.makedirs(self.path)
-            except os.error, msg:
-                log.error("Unable to create path: %s: %s", self.path, msg)
-                return False
+        mkdir(self.path)
     
     def all(self):        
         for path in self.paths:
@@ -49,7 +45,7 @@ class Archive:
         spath = os.path.join(self.server_path, path)
         
         if not os.path.exists(spath):
-            log.error("Path does not exist: %s" % (spath))
+            log.error("Failed to archive: %s: nonexistent path", spath)
             return
         
         if os.path.isfile(spath):
@@ -66,13 +62,6 @@ class Archive:
         if check_archives:
             self.__check_max_archives(apath)
         
-        if not os.path.isdir(self.path):
-            try:
-                os.makedirs(self.path)
-            except os.error, msg:
-                log.error("Unable to create path: %s: %s", self.path, msg)
-                return
-        
         apath = "%s.%d.%s" % (name, time.time(), ext)
         apath = os.path.join(self.path, apath)
         
@@ -82,12 +71,12 @@ class Archive:
             res = self.__compress_dir(path, apath)
         
         if self.max_size >= 1:
-            os.remove(spath)
+            unlink(spath)
         
         if res:
-            log.info("Archived: %s" % (spath))
+            log.info("Archived: %s", spath)
         else:
-            log.error("Unable to archive: %s" % (spath))
+            log.error("Failed to archive: %s", spath)
     
     def __check_max_size(self, path):
         if self.max_size < 1:
@@ -114,28 +103,24 @@ class Archive:
         size  = size - self.max_archives
         
         for archive in range(size):
-            try:
-                os.remove(archive)
-            except OSError, msg:
-                log.error("Unable to remove: %s: %s", archive, msg)
+            unlink(archive)
     
     def __compress_file(self, path, apath):
         fpath = os.path.join(self.server_path, path)
         
         if not os.path.isfile(fpath):
-            self.log.error("File not found: %s", (fpath))
+            log.error("Failed to archive: %s: nonexistent path", spath)
             return False
         
-        try:
-            fp = open(fpath, "r")
-        except IOError, msg:
-            log.error("Unable to open: %s: %s", fpath, msg)
+        fp = fopen(fpath, "r")
+        
+        if not fp:
             return False
         
         try:
             bzf = BZ2File(apath, "w")
         except:
-            log.error("Unable to open: %s", apath)
+            log.error("Failed to open: %s", apath)
             return False
         
         fsize = os.path.getsize(fpath)
@@ -166,17 +151,17 @@ class Archive:
         fp.close()
         bzf.close()
         
-        log.info("Compressed: %s" % (path))
+        log.info("Compressed: %s", path)
         return True
     
     def __compress_dir(self, path, apath):
         try:
             tf = TarFile.open(apath, "w:bz2")
         except Exception, msg:
-            log.error("Unable to open: %s: %s", apath, msg)
+            log.error("Failed to open: %s: %s", apath, msg)
             return False
         
-        log.info("Compressing: %s" % (path))
+        log.info("Compressing: %s", path)
         
         cwd = os.getcwd()
         os.chdir(self.server_path)
@@ -186,5 +171,5 @@ class Archive:
         
         os.chdir(cwd)
         
-        log.info("Compressed: %s" % (path))
+        log.info("Compressed: %s", path)
         return True

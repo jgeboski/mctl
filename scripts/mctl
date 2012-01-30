@@ -141,9 +141,9 @@ if opts.list:
     servers = servers.keys()
     
     if len(servers) < 1:
-        log.info("No servers found")
+        print "No servers found"
     
-    print "Server(s): %s" % string.join(servers, ", ")
+    print "Server(s): %s" % (string.join(servers, ", "))
     exit()
 
 if not opts.server:

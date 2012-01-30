@@ -1,4 +1,5 @@
 import logging
+import os
 import sys
 import urllib2
 import urlparse
@@ -7,6 +8,42 @@ from math import floor
 
 log = logging.getLogger("mctl")
 
+def mkdir(path):
+    if os.path.isdir(path):
+        return True
+    
+    try:
+        os.makedirs(path)
+    except OSError, msg:
+        log.error("Failed to make directory: %s: %s", path, msg)
+        return False
+    
+    return True
+
+def fopen(path, mode = "r", create_path = False):
+    if create_path:
+        dpath = os.path.dirname(path)
+        
+        if not mkdir(dpath):
+            return None
+    
+    try:
+        fp = open(path, mode)
+    except IOError, msg:
+        log.error("Failed to open: %s: %s", self.__path, msg)
+        fp = None
+    
+    return fp
+
+def unlink(path):
+    try:
+        os.remove(path)
+    except OSError, msg:
+        log.error("Failed to remove: %s: %s", archive, msg)
+        return False
+    
+    return True
+
 def download(url, path):
     if not url or not path:
         return False
@@ -14,21 +51,19 @@ def download(url, path):
     try:
         ul = urllib2.urlopen(url)
     except urllib2.URLError, msg:
-        log.error("Unable to download: %s: %s", url, msg)
+        log.error("Failed to download: %s: %s", url, msg)
         return False
     
     size = int(ul.info().getheader('Content-Length'))
     
     if size < 1:
-        log.info("Nothing to download from: %s", url)
+        log.info("Failed to download: %s: nothing to download", url)
         return False
     
-    try:
-        fp = open(path, "w")
-    except IOError, msg:
+    fp = fopen(path, "w", True)
+    
+    if not fp:
         ul.close()
-        
-        log.error("Unable to open: %s: %s", path, msg)
         return False
     
     l = 0
@@ -72,7 +107,7 @@ def url_get(url):
         rq = urllib2.Request(url, None, headers)
         ul = urllib2.urlopen(rq)
     except urllib2.URLError, msg:
-        log.error("Unable to open: %s: %s", url, msg)
+        log.error("Failed to open: %s: %s", url, msg)
         return None
     
     data = ul.read()
