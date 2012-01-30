@@ -3,7 +3,7 @@ import os
 import re
 import util
 
-from util    import download, mkdir, url_get, url_join
+from util    import download, mkdir, unlink, url_get, url_join
 from xml.dom import minidom
 from zipfile import ZipFile
 
