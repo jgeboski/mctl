@@ -63,6 +63,7 @@ class _FakeChannel(dispatcher):
             return
         
         addr, port = self.addr
+        data       = data[4:]
         
         log.info("%s [%s:%d] attempted to join", data, addr, port)
         
