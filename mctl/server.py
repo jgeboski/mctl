@@ -40,7 +40,7 @@ def _screen_new(name, command):
     _execute_command("screen -S %s -dm %s" % (name, command))
 
 def _screen_join(name):
-    _execute_command("screen -S %s -x" % (name, False))
+    _execute_command("screen -S %s -x" % (name), False)
 
 def _screen_command_send(name, command):
     _execute_command("screen -S %s -p 0 -X stuff '%s\n'" % (name, command))
