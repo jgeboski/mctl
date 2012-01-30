@@ -6,10 +6,10 @@ import string
 import sys
 
 # Temporarily set the path for testing
-sys.path.append("../mctl")
+sys.path.append("../")
 
-from config import Config
-from server import FakeServer, Server
+from mctl.config import Config
+from mctl.server import FakeServer, Server
 
 parser = optparse.OptionParser(
     usage       = "usage: %prog [OPTIONS]",

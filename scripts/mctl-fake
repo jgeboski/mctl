@@ -8,11 +8,11 @@ import signal
 import sys
 
 # Temporarily set the path for testing
-sys.path.append("../mctl")
+sys.path.append("../")
 
-from server import FakeServer
-from signal import signal, SIGINT, SIGQUIT, SIGTERM
-from util   import fopen, unlink
+from mctl.server import FakeServer
+from mctl.util   import fopen, unlink
+from signal      import signal, SIGINT, SIGQUIT, SIGTERM
 
 parser = optparse.OptionParser(
     usage       = "usage: %prog [OPTIONS]",
