@@ -231,15 +231,12 @@ class Server:
             cpkg = config.package_get(package)
             pkg  = Package(package, cpkg, self.path)
             
-            version = pkg.update(force)
+            version = config.versions.get(self.server, package)
+            version = pkg.update(version, force)
             
-            if not version:
-                continue
-            
-            cpkg['version'] = version
-            config.package_set(package, cpkg)
+            config.versions.set(self.server, package, version)
         
-        config.save()
+        config.versions.save()
         return config
     
     def start(self, force = False):

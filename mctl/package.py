@@ -22,7 +22,6 @@ def _xml_child_get(node, name):
 class Package:
     def __init__(self, name, package, swd):
         self.package = name
-        self.version = package['version']
         self.path    = package['path']
         self.type    = package['type']
         self.url     = package['url']
@@ -34,48 +33,46 @@ class Package:
         else:
             self.path = swd
     
-    def update(self, force = False):
+    def update(self, version, force = False):
         if not os.path.isdir(self.path):
             try:
                 os.makedirs(self.path)
             except os.error, msg:
                 log.error("Unable to create path: %s: %s", self.path, msg)
-                return self.version
+                return version
         
         if self.updater == "bukkitdev":
-            version, urlh = self.__bukkitdev_info()
+            uver, urlh = self.__bukkitdev_info()
         elif self.updater == "jenkins":
-            version, urlh = self.__jenkins_info()
+            uver, urlh = self.__jenkins_info()
         else:
             log.error("%s: invalud updater: %s" % (
                 self.package, self.updater
             ))
             
-            return self.version
+            return version
         
-        if not version or not urlh:
-            return self.version
+        if not urlh:
+            return version
         
         out = os.path.join(self.path, "%s.%s" % (
             self.package, self.type
         ))
         
-        if version == self.version and not force:
+        if uver and uver == version and not force:
             log.info("%s: already up to date" % (self.package))
-            return self.version
+            return version
         
         if not download(urlh, out):
-            return self.version
+            return version
         
-        log.info("%s: updated from %s to %s" % (
-            self.package, self.version, version
-        ))
+        log.info("%s: updated from %s to %s" % (self.package, version, uver))
         
         if self.type != "zip":
-            return version
+            return uver
         
         if len(self.extract) < 1:
-            return version
+            return uver
         
         zf  = ZipFile(out, "r")
         cwd = os.getcwd()
@@ -89,7 +86,7 @@ class Package:
         zf.close()
         os.remove(out)
         
-        return version
+        return uver
     
     def __bukkitdev_info(self):
         urlh = url_join(self.url, "files.rss")
@@ -112,20 +109,30 @@ class Package:
         version = _xml_child_get(item, "title")
         version = version.firstChild.nodeValue.lower()
         
-        match   = re.search("((?:\d+\.)(?:\w+\.)?(?:\w+\.)?(?:\w+))", version)
-        version = match.group(1)
+        # Clean up the version numbers
+        version = version.replace("v", "")
+        
+        match = re.search("((?:\d+\.)(?:\w+\.)?(?:\w+\.)?(?:\w+))", version)
+        
+        if match:
+            version = match.group(1)
+        else:
+            log.warning("Unable to get version: %s: `%s'",
+                        self.package, version)
+            
+            version = None
         
         urlh = _xml_child_get(item, "link")
         data = url_get(urlh.firstChild.nodeValue)
         
         if not data:
-            return (None, None)
+            return (version, None)
         
         match = re.search(
             "<a href=\"(\S*\.%s)\">Download</a>" % (self.type), data)
         
         if not match:
-            return (None, None)
+            return (version, None)
         
         return (version, match.group(1))
 

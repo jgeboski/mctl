@@ -14,6 +14,68 @@ def _merge_dicts(dict1, dict2):
     
     return dict1
 
+class Versions:
+    def __init__(self):
+        self.__versions = dict()
+        
+        self.__path = os.path.join("~", ".mctl", "versions.json")
+        self.__path = os.path.expanduser(self.__path)
+    
+    def load(self):
+        if not os.path.isfile(self.__path):
+            return False
+        
+        try:
+            fp = open(self.__path, "r")
+        except IOError, msg:
+            log.warning("Unable to open: %s: %s", self.__path, msg)
+            return False
+        
+        self.__versions = json.load(fp)
+        fp.close()
+        
+        if not isinstance(self.__versions, dict):
+            self.__versions = dict()
+        
+        return True
+    
+    def save(self):
+        path = os.path.dirname(self.__path)
+        
+        if not os.path.isdir(path):
+            try:
+                os.makedirs(path)
+            except os.error, msg:
+                log.error("Unable to create path: %s: %s", path, msg)
+                return False
+        
+        try:
+            fp = open(self.__path, "w")
+        except IOError, msg:
+            log.error("Unable to open: %s: %s", self.__path, msg)
+            return False
+        
+        json.dump(self.__versions, fp, indent = True)
+        fp.close()
+        
+        return True
+    
+    def get(self, server, package):
+        if not server in self.__versions:
+            return None
+        
+        if not package in self.__versions[server]:
+            return None
+        
+        return self.__versions[server][package]
+    
+    def set(self, server, package, version):
+        if not isinstance(self.__versions[server], dict):
+            self.__versions[server] = dict()
+        
+        self.__versions[server][package] = version
+        
+
 class Config:
     def __init__(self, path = None):
         self.__path   = path
@@ -21,6 +83,8 @@ class Config:
             'servers' : dict(),
             'packages': dict()
         }
+        
+        self.versions = Versions()
         
         if path:
             return
@@ -47,6 +111,8 @@ class Config:
         if not 'packages' in self.__config:
             self.__config['packages'] = dict()
         
+        self.versions.load()
+        
         return True
     
     def save(self):
@@ -67,6 +133,8 @@ class Config:
         
         json.dump(self.__config, fp, indent = True)
         fp.close()
+        
+        self.versions.save()
         
         return True
     
@@ -168,7 +236,6 @@ class Config:
     
     def package_new(self):
         package = {
-            'version': None,
             'path'   : None,
             'type'   : None,
             'url'    : None,
