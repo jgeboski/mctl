@@ -2,7 +2,7 @@ import json
 import logging
 import os
 
-log = logging.getLogger("config")
+log = logging.getLogger("mctl")
 
 def _merge_dicts(dict1, dict2):
     if not dict1 or not dict2:

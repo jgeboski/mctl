@@ -5,7 +5,7 @@ import urlparse
 
 from math import floor
 
-log = logging.getLogger("util")
+log = logging.getLogger("mctl")
 
 def download(url, path):
     if not url or not path:

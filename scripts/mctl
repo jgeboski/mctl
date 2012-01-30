@@ -124,15 +124,12 @@ parser.add_option_group(attrs)
 
 opts, args = parser.parse_args()
 
-config  = Config(opts.config)
-loggers = ["config", "archive", "mctl", "server", "package", "util"]
-lhndr   = logging.StreamHandler()
+config = Config(opts.config)
+log    = logging.getLogger("mctl")
+lhndr  = logging.StreamHandler()
 
-for slog in loggers:
-    log = logging.getLogger(slog)
-    
-    log.addHandler(lhndr)
-    log.setLevel(logging.INFO)
+log.addHandler(lhndr)
+log.setLevel(logging.INFO)
 
 config.load()
 

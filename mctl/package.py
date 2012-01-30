@@ -7,7 +7,7 @@ from util    import download, url_get, url_join
 from xml.dom import minidom
 from zipfile import ZipFile
 
-log = logging.getLogger("package")
+log = logging.getLogger("mctl")
 
 def _xml_child_get(node, name):
     if not node.hasChildNodes():

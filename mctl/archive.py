@@ -8,7 +8,7 @@ from glob    import glob
 from math    import floor
 from tarfile import TarFile
 
-log = logging.getLogger("archive")
+log = logging.getLogger("mctl")
 
 class Archive:
     def __init__(self, server_path, archive):

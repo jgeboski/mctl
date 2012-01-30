@@ -13,7 +13,7 @@ from package    import Package
 from signal     import SIGINT
 from subprocess import Popen, PIPE
 
-log = logging.getLogger("server")
+log = logging.getLogger("mctl")
 
 def _execute_command(command, quiet = True):
     args = shlex.split(str(command))
