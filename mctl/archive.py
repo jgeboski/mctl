@@ -22,8 +22,6 @@ class Archive:
         self.max_size     = archive['max-size']
         self.max_archives = archive['max-archives']
         self.paths        = archive['paths']
-        
-        mkdir(self.path)
     
     def all(self):        
         for path in self.paths:
@@ -55,6 +53,8 @@ class Archive:
             ext = "bz2"
         else:
             ext = "tar.bz2"
+        
+        mkdir(self.path)
         
         name  = os.path.basename(path)
         apath = os.path.join(self.path, "%s.\d+.%s" % (name, ext))
