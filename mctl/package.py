@@ -70,15 +70,23 @@ class Package:
         if len(self.extract) < 1:
             return uver
         
-        zf  = ZipFile(out, "r")
-        cwd = os.getcwd()
-        
-        os.chdir(self.path)
+        zf = ZipFile(out, "r")
+        nl = zf.namelist()
         
         for path in self.extract:
-            zf.extract(path)
+            if not path.endswith("/") and path in nl:
+                zf.extract(path, self.path)
+                continue
+            
+            for zpath in nl:
+                if zpath.endswith("/"):
+                    continue
+                
+                if not zpath.startswith(path):
+                    continue
+                
+                zf.extract(zpath, self.path)
         
-        os.chdir(cwd)
         zf.close()
         unlink(out)
         
