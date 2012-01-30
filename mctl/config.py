@@ -61,7 +61,7 @@ class Versions:
         return self.__versions[server][package]
     
     def set(self, server, package, version):
-        if not isinstance(self.__versions[server], dict):
+        if not server in self.__versions:
             self.__versions[server] = dict()
         
         self.__versions[server][package] = version
