@@ -1,20 +1,32 @@
 {
     "servers": {
         "example": {
-            "path"        : "/the/absolute/path/to/the/server/root",
-            "launch"      : "java -server -Xincgc -Xmx1G -jar CraftBukkit.jar",
-            "timeout"     : 60,
-            "log-size"    : 20,
-            "log-path"    : "/the/absolute/path/to/the/server/root/logs",
-            "backup-max"  : 50,
-            "backup-path" : "/the/absolute/path/to/the/server/root/backup",
-            "backup-paths": ["plugins", "world", "world_nether"],
+            "path"   : "/absolute/path/to/server/root",
+            "launch" : "java -server -Xincgc -Xmx1G -jar CraftBukkit.jar",
+            "timeout": 60,
+            
             "packages": [
                 "CraftBukkit", "CraftIRC",    "dynmap",
                 "LWC",         "LogBlock",    "Minequery",
                 "NoCheat",     "Permissions", "PermissionsEx",
                 "Spout",       "WorldEdit",   "WorldGuard"
-            ]
+            ],
+            
+            "archives": {
+                "log": {
+                    "path"        : "/absolute/path/to/server/root/logs",
+                    "max-size"    : 20,
+                    "max-archives": 0,
+                    "paths"       : ["server.log"]
+                },
+                
+                "backup": {
+                    "path"        : "/absolute/path/to/server/root/backup",
+                    "max-size"    : 0,
+                    "max-archives": 30,
+                    "paths"       : ["plugins", "world", "world_nether"]
+                }
+            }
         }
     },
     
@@ -24,7 +36,8 @@
             "path"   : null,
             "type"   : "jar",
             "url"    : "http://ci.bukkit.org/job/dev-CraftBukkit/",
-            "updater": "jenkins"
+            "updater": "jenkins",
+            "extract": []
         },
         
         "CraftIRC": {
@@ -32,7 +45,8 @@
             "path"   : "plugins",
             "type"   : "jar",
             "url"    : "http://ensifera.com:8080/job/CraftIRC%203/",
-            "updater": "jenkins"
+            "updater": "jenkins",
+            "extract": []
         },
         
         "dynmap": {
@@ -40,7 +54,8 @@
             "path"   : "plugins",
             "type"   : "jar",
             "url"    : "http://webbukkit.org:8080/job/dynmap/",
-            "updater": "jenkins"
+            "updater": "jenkins",
+            "extract": []
         },
         
         "LWC": {
@@ -48,7 +63,8 @@
             "path"   : "plugins",
             "type"   : "jar",
             "url"    : "http://ci.griefcraft.com/job/LWC/",
-            "updater": "jenkins"
+            "updater": "jenkins",
+            "extract": []
         },
         
         "LogBlock": {
@@ -56,7 +72,8 @@
             "path"   : "plugins",
             "type"   : "jar",
             "url"    : "http://diddiz.insane-architects.net:8080/job/LogBlock/",
-            "updater": "jenkins"
+            "updater": "jenkins",
+            "extract": []
         },
         
         "Minequery": {
@@ -73,7 +90,8 @@
             "path"   : "plugins",
             "type"   : "jar",
             "url"    : "http://dev.bukkit.org/server-mods/nocheat/",
-            "updater": "bukkitdev"
+            "updater": "bukkitdev",
+            "extract": []
         },
         
         "Permissions": {
@@ -81,7 +99,8 @@
             "path"   : "plugins",
             "type"   : "jar",
             "url"    : "http://webbukkit.org:8080/job/PermissionsCompat/",
-            "updater": "jenkins"
+            "updater": "jenkins",
+            "extract": []
         },
         
         "PermissionsEx": {
@@ -89,7 +108,8 @@
             "path"   : "plugins",
             "type"   : "jar",
             "url"    : "http://webbukkit.org:8080/job/PermissionsEx/",
-            "updater": "jenkins"
+            "updater": "jenkins",
+            "extract": []
         },
         
         "Spout": {
@@ -97,7 +117,8 @@
             "path"   : "plugins",
             "type"   : "jar",
             "url"    : "http://ci.spout.org/job/SpoutPlugin/",
-            "updater": "jenkins"
+            "updater": "jenkins",
+            "extract": []
         },
         
         "WorldEdit": {
@@ -105,7 +126,8 @@
             "path"   : "plugins",
             "type"   : "jar",
             "url"    : "http://build.sk89q.com/job/WorldEdit/",
-            "updater": "jenkins"
+            "updater": "jenkins",
+            "extract": []
         },
         
         "WorldGuard": {
@@ -113,7 +135,8 @@
             "path"   : "plugins",
             "type"   : "jar",
             "url"    : "http://build.sk89q.com/job/WorldGuard/",
-            "updater": "jenkins"
+            "updater": "jenkins",
+            "extract": []
         }
     }
 }

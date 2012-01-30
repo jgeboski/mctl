@@ -7,10 +7,8 @@ import struct
 import sys
 import time
 
+from archive    import Archive
 from asyncore   import dispatcher
-from bz2        import BZ2File
-from glob       import glob
-from math       import floor
 from package    import Package
 from signal     import SIGINT
 from subprocess import Popen, PIPE
@@ -196,28 +194,37 @@ def PFakeServer(server, addr = None, port = 25565, motd = None, message = None):
     )
     
     _screen_new(name, cmd)
-    #_execute_command(cmd, False)
 
 class Server:
     def __init__(self, name, server):
-        self.server       = name
-        self.path         = server['path']
-        self.launch       = server['launch']
-        self.timeout      = server['timeout']
-        self.log_size     = server['log-size']
-        self.log_path     = server['log-path']
-        self.backup_max   = server['backup-max']
-        self.backup_path  = server['backup-path']
-        self.backup_paths = server['backup-paths']
-        self.packages     = server['packages']
+        self.server   = name
+        self.path     = server['path']
+        self.launch   = server['launch']
+        self.timeout  = server['timeout']
+        self.archives = server['archives']
+        self.packages = server['packages']
         
         self.screen_name = "mctl-%s" % (name)
         
     def command(self, command):
         _screen_command_send(self.screen_name, command)
     
-    def backup(self, server):
-        print "[TODO] Backup..."
+    def archive(self, archive):
+        if not archive:
+            return
+        
+        archives = list()
+        
+        if archive != "all":
+            for archive in archive.split(","):
+                if archive in self.archives:
+                    archives.append(archive)
+        else:
+            archives = self.archives.keys()
+        
+        for archive in archives:
+            archive = Archive(self.path, self.archives[archive])
+            archive.all()
     
     def update(self, config, force = False):
         for package in self.packages:
@@ -249,15 +256,9 @@ class Server:
             log.error("server already running")
             return
         
-        if self.log_size and self.log_path:
-            path = os.path.join(self.path, "server.log")
-            
-            if os.path.isfile(path):
-                ssize = self.log_size * (1024 ** 2)
-                fsize = os.path.getsize(path)
-                
-                if fsize > ssize:
-                    self.__archive_file("server.log", self.log_path)
+        for archive in self.archives:
+            archive = Archive(self.path, self.archives[archive])
+            archive.oversized()
         
         log.info("starting server...")
         
@@ -277,8 +278,8 @@ class Server:
         
         s = self.timeout
         
-        if s >= 10:
-            while s > 0:
+        if s:
+            while s >= 1:
                 say = "Server stopping in %s second(s)" % (s)
                 
                 self.command("say %s" % (say))
@@ -342,74 +343,3 @@ class Server:
         
         log.info("stopping fake server...")
         FakeServer.kill(self.server)
-    
-    def __archive_file(self, file, path):
-        fpath = os.path.join(self.path, file)
-        
-        if not os.path.isfile(fpath):
-            self.log.error("Unable to locate: %s", fpath)
-            return
-        
-        if not os.path.isdir(path):
-            try:
-                os.makedirs(path)
-            except os.error, msg:
-                log.error("Unable to create path: %s: %s", path, msg)
-                return False
-        
-        apath = os.path.join(self.log_path, "%s.*.bz2" % (file))
-        files = glob(apath)
-        files.sort()
-        
-        i = 1
-        
-        for fp in reversed(files):
-            fp = os.path.basename(fp)
-            match = re.match("%s\.(\d+)\.bz2" % (file), fp)
-            
-            if not match:
-                continue
-            
-            i = int(match.group(1)) + 1
-            break
-        
-        apath = os.path.join(self.log_path, "%s.%d.bz2" % (file, i))
-        bzf   = BZ2File(apath, "w")
-        
-        try:
-            fp = open(fpath, "r")
-        except IOError, msg:
-            log.error("Unable to open: %s: %s", fpath, msg)
-            bzf.close()
-            return
-        
-        fsize = os.path.getsize(fpath)
-        l     = 0
-        
-        while True:
-            data = fp.read(1024)
-            
-            if not data:
-                break
-            
-            bzf.write(data)
-            
-            if log.level != logging.INFO:
-                continue
-            
-            p = (float(fp.tell()) / float(fsize)) * 100
-            p = int(floor(p))
-            
-            if l == p:
-                continue
-            
-            sys.stdout.write("\033[2K")
-            sys.stdout.write("Compressing(%d%%): %s\r" % (p, file))
-            sys.stdout.flush()
-            l = p
-        
-        fp.close()
-        bzf.close()
-        os.remove(fpath)
-        
-        log.info("Archived: %s" % (file))

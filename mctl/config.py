@@ -92,20 +92,35 @@ class Config:
         
         return packages
     
+    def archive_new(self):
+        archive = {
+            'path'        : None,
+            'max-size'    : 0,
+            'max-archives': 0,
+            'paths'       : list()
+        }
+        
+        return archive
+    
     def server_new(self):
         server = {
-            'path'        : None,
-            'launch'      : None,
-            'timeout'     : 0,
-            'log-size'    : 0,
-            'log-path'    : None,
-            'backup-max'  : 0,
-            'backup-path' : None,
-            'backup-paths': list(),
-            'packages'    : list()
+            'path'    : None,
+            'launch'  : None,
+            'timeout' : 0,
+            'archives': dict(),
+            'packages': list()
         }
         
         return server
+    
+    def server_exists(self, server):
+        if not server:
+            return False
+        
+        if server in self.__config['servers']:
+            return True
+        
+        return False
     
     def server_get(self, server):
         if not server:
@@ -120,6 +135,10 @@ class Config:
         srv = self.__config['servers'][server]
         srv = _merge_dicts(self.server_new(), srv)
         
+        for archive in srv['archives']:
+            srv['archives'][archive] = _merge_dicts(self.archive_new(),
+                                                    srv['archives'][archive])
+        
         return srv
     
     def server_set(self, name, server):
@@ -130,6 +149,11 @@ class Config:
             return
         
         srv = _merge_dicts(self.server_new(), server)
+        
+        for archive in srv['archives']:
+            srv['archives'][archive] = _merge_dicts(self.archive_new(),
+                                                    srv['archives'][archive])
+        
         self.__config['servers'][name] = srv
     
     def server_remove(self, server):

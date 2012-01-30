@@ -16,10 +16,8 @@ parser = optparse.OptionParser(
     description = "Minecraft server controller"
 )
 
-sacts  = optparse.OptionGroup(parser, "Server Actions")
-sattrs = optparse.OptionGroup(parser, "Server Attributes")
-pacts  = optparse.OptionGroup(parser, "Package Actions")
-pattrs = optparse.OptionGroup(parser, "Package Attributes")
+acts  = optparse.OptionGroup(parser, "Server Actions")
+attrs = optparse.OptionGroup(parser, "Server Attributes")
 
 parser.add_option(
     "-g", "--config",
@@ -36,35 +34,10 @@ parser.add_option(
     help    = "server to apply actions and attributes to"
 )
 parser.add_option(
-    "-p", "--package",
-    action  = "store",
-    dest    = "package",
-    metavar = "PACKAGE",
-    help    = "package to apply attributes to"
-)
-parser.add_option(
-    "-l", "--list-servers",
+    "-l", "--list",
     action  = "store_true",
-    dest    = "list_servers",
+    dest    = "list",
     help    = "list the current servers"
-)
-parser.add_option(
-    "-a", "--list-packages",
-    action  = "store_true",
-    dest    = "list_packages",
-    help    = "list the current packages"
-)
-parser.add_option(
-    "-d", "--remove",
-    action  = "store_true",
-    dest    = "remove",
-    help    = "remove the server or package"
-)
-parser.add_option(
-    "-w", "--save",
-    action  = "store_true",
-    dest    = "save",
-    help    = "save options to the config"
 )
 parser.add_option(
     "-f", "--force",
@@ -73,49 +46,50 @@ parser.add_option(
     help    = "force specified actions"
 )
 
-sacts.add_option(
+acts.add_option(
     "-i", "--start",
     action  = "store_true",
     dest    = "start",
     help    = "start the sever"
 )
-sacts.add_option(
+acts.add_option(
     "-q", "--stop",
     action  = "store_true",
     dest    = "stop",
     help    = "stop the sever"
 )
-sacts.add_option(
+acts.add_option(
     "-r", "--restart",
     action  = "store_true",
     dest    = "restart",
     help    = "restart the sever"
 )
-sacts.add_option(
+acts.add_option(
     "-e", "--start-fake",
     action  = "store_true",
     dest    = "start_fake",
     help    = "start the fake sever"
 )
-sacts.add_option(
+acts.add_option(
     "-k", "--stop-fake",
     action  = "store_true",
     dest    = "stop_fake",
     help    = "stop the fake sever"
 )
-sacts.add_option(
-    "-b", "--backup",
-    action  = "store_true",
-    dest    = "backup",
-    help    = "backup the server paths"
-)
-sacts.add_option(
+acts.add_option(
     "-u", "--update",
     action  = "store_true",
     dest    = "update",
     help    = "update the server packages"
 )
-sacts.add_option(
+acts.add_option(
+    "-a", "--archive",
+    action  = "store",
+    dest    = "archive",
+    metavar = "ARCHIVES",
+    help    = "the run the archiver on the archives"
+)
+acts.add_option(
     "-c", "--command",
     action  = "store",
     dest    = "command",
@@ -123,129 +97,35 @@ sacts.add_option(
     help    = "run a command on the server"
 )
 
-sattrs.add_option(
+attrs.add_option(
     "--motd",
     action  = "store",
     dest    = "motd",
     metavar = "MOTD",
-    help    = "MOTD for a fake-server"
+    help    = "MOTD for a fake server"
 )
-sattrs.add_option(
+attrs.add_option(
     "--message",
     action  = "store",
     dest    = "message",
     metavar = "MESSAGE",
     help    = "message for restart/stop/kick"
 )
-sattrs.add_option(
-    "--server-path",
-    action  = "store",
-    dest    = "server_path",
-    metavar = "PATH",
-    help    = "working directory or root path of the server"
-)
-sattrs.add_option(
-    "--launch",
-    action  = "store",
-    dest    = "launch",
-    metavar = "COMMAND",
-    help    = "launch command for the server"
-)
-sattrs.add_option(
+attrs.add_option(
     "--timeout",
     action  = "store",
     dest    = "timeout",
     metavar = "TIMEOUT",
     help    = "server shutdown timeout in seconds"
 )
-sattrs.add_option(
-    "--log-size",
-    action  = "store",
-    dest    = "log_size",
-    metavar = "SIZE",
-    help    = "max size of a log before being archived"
-)
-sattrs.add_option(
-    "--log-path",
-    action  = "store",
-    dest    = "log_path",
-    metavar = "PATH",
-    help    = "directory to store archived logs in"
-)
-sattrs.add_option(
-    "--backup-max",
-    action  = "store",
-    dest    = "backup_max",
-    metavar = "MAX",
-    help    = "max amount of backups before pruning"
-)
-sattrs.add_option(
-    "--backup-path",
-    action  = "store",
-    dest    = "backup_path",
-    metavar = "PATH",
-    help    = "directory to store backup paths in"
-)
-sattrs.add_option(
-    "--backup-paths",
-    action  = "store",
-    dest    = "backup_paths",
-    metavar = "PATHS",
-    help    = "list of server directories to backup"
-)
-sattrs.add_option(
-    "--packages",
-    action  = "store",
-    dest    = "packages",
-    metavar = "PACKAGES",
-    help    = "list of packages for the updater"
-)
 
-pattrs.add_option(
-    "--package-path",
-    action  = "store",
-    dest    = "package_path",
-    metavar = "PATH",
-    help    = "directory the package resides in"
-)
-pattrs.add_option(
-    "--package-type",
-    action  = "store",
-    dest    = "package_type",
-    metavar = "TYPE",
-    help    = "download type of the package (jar|zip)"
-)
-pattrs.add_option(
-    "--package-url",
-    action  = "store",
-    dest    = "package_url",
-    metavar = "URL",
-    help    = "URL for the updater"
-)
-pattrs.add_option(
-    "--updater",
-    action  = "store",
-    dest    = "updater",
-    metavar = "UPDATER",
-    help    = "updater to use on the URL (bukkitdev|jenkins)"
-)
-pattrs.add_option(
-    "--extract",
-    action  = "store",
-    dest    = "extract",
-    metavar = "EXTRACT",
-    help    = "list of files to extract from a downloaded archive"
-)
-
-parser.add_option_group(sacts)
-parser.add_option_group(sattrs)
-parser.add_option_group(pattrs)
+parser.add_option_group(acts)
+parser.add_option_group(attrs)
 
 opts, args = parser.parse_args()
 
-config = Config(opts.config)
-        
-loggers = ["config", "archiver", "mctl", "server", "package", "util"]
+config  = Config(opts.config)
+loggers = ["config", "archive", "mctl", "server", "package", "util"]
 lhndr   = logging.StreamHandler()
 
 for slog in loggers:
@@ -259,109 +139,32 @@ config.load()
 server  = None
 package = None
 
-if opts.list_servers:
+if opts.list:
     servers = config.servers_get()
+    servers = servers.keys()
     
     if len(servers) < 1:
         log.info("No servers found")
     
-    for name in servers:
-        server = servers[name]
-        print "Server: %s" % (name)
-        print "  Server Root:    %s"  % (server['path'])
-        print "  Launch Command: %s"  % (server['launch'])
-        print "  Stop Timeout:   %ss" % (server['timeout'])
-        print "  Max Log Size:   %dM" % (server['log-size'])
-        print "  Log Path:       %s"  % (server['log-path'])
-        print "  Max Backups:    %d"  % (server['backup-max'])
-        print "  Backup Path:    %s"  % (server['backup-path'])
-        
-        if len(server['backip-paths']) >= 1:
-            print "  Backup Paths:   %s"  % (
-                string.join(server['backup-paths'], ", ")
-            )
-        
-        if len(server['packages']) >= 1:
-            print "  Packages:       %s"  % (
-                string.join(server['packages'], ", ")
-            )
-    
+    print "Server(s): %s" % string.join(servers, ", ")
     exit()
-
-if opts.list_packages:
-    packages = config.packages_get()
-    
-    if len(packages) < 1:
-        log.info("No packages found")
-    
-    for name in packages:
-        package = packages[name]
-        
-        print "Package: %s" % (name)
-        print "Version: %s" % (package['version'])
-        print "Path:    %s" % (package['path'])
-        print "Type:    %s" % (package['type'])
-        print "URL:     %s" % (package['url'])
-        print "Updater: %s" % (package['updater'])
-        
-        if len(package['extract']) >= 1:
-            print "Extract: %s" % (string.join(package['extract'], ", "))
-        
-        print ""
-    
-    exit()
-
-if opts.remove:
-    if opts.server:
-        config.server_remove(opts.server)
-    
-    if opts.package:
-        config.package_remove(opts.package)
-    
-    exit()
-
-if opts.server:
-    server = config.server_get(opts.server)
-    
-    if opts.server_path:  server['path']         = opts.server_path
-    if opts.launch:       server['launch']       = opts.launch
-    if opts.timeout:      server['timeout']      = int(opts.timeout)
-    if opts.log_size:     server['log-size']     = int(opts.log_size)
-    if opts.log_path:     server['log-path']     = opts.log_path
-    if opts.backup_max:   server['backup-max']   = int(opts.backup_max)
-    if opts.backup_path:  server['backup-path']  = opts.backup_path
-    if opts.backup_paths: server['backup-paths'] = opts.backup_paths.split(",")
-    if opts.packages:     server['packages']     = opts.packages.split(",")
-    
-    config.server_set(opts.server, server)
-
-if opts.package:
-    package = config.package_get(opts.package)
-    
-    if opts.package_path: package['path']    = opts.package_path
-    if opts.package_type: package['type']    = opts.package_type
-    if opts.package_url:  package['url']     = opts.package_url
-    if opts.updater:      package['updater'] = opts.updater
-    if opts.extract:      package['extract'] = opts.extract.split(",")
-    
-    config.package_set(opts.package, package)
-
-if opts.save:
-    config.save()
 
 if not opts.server:
     parser.error("option -s, --server is required")
-    exit(1)
+
+if not config.server_exists(opts.server):
+    parser.error("option -s, --server requires a valid server")
 
 server = config.server_get(opts.server)
+
+if opts.timeout:
+    server['timeout'] = int(opts.timeout)
+
+config.server_set(opts.server, server)
 server = Server(opts.server, server)
 
-if not server:
-    parser.error("invalid server")
-    exit(1)
-
-if opts.backup:
-    server.backup(opts.server)
+if opts.archive:
+    server.archive(opts.archive)
 
 if opts.update:
     config = server.update(config, opts.force)
