@@ -69,10 +69,9 @@ parser.add_option_group(attrs)
 
 opts, args = parser.parse_args()
 
-log   = logging.getLogger("mctl")
-lhndr = logging.StreamHandler()
+logging.basicConfig(format = "[%(levelname)s] %(message)s")
 
-log.addHandler(lhndr)
+log = logging.getLogger("mctl")
 log.setLevel(logging.INFO)
 
 if not opts.server:

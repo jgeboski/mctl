@@ -124,11 +124,11 @@ parser.add_option_group(attrs)
 
 opts, args = parser.parse_args()
 
+logging.basicConfig(format = "[%(levelname)s] %(message)s")
+
 config = Config(opts.config)
 log    = logging.getLogger("mctl")
-lhndr  = logging.StreamHandler()
 
-log.addHandler(lhndr)
 log.setLevel(logging.INFO)
 
 config.load()
