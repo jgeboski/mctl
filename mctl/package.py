@@ -177,7 +177,7 @@ class Package:
                 urlr = url_join(urlh, match.group(1))
                 return (version, urlr)
             
-            match = re.search("\"(\S+\$\S+)/\"", data)
+            match = re.search("\"(\S+\$%s)/\"" % (self.package), data)
             
             if not match:
                 continue
@@ -189,6 +189,13 @@ class Package:
                 continue
             
             match = re.search("\"(artifact/\S+\.%s)\"" % (self.type), data)
+            
+            if not match:
+                log.warning("Failed to get download URL: %s (version: %s): "
+                            "reverting to previous version",
+                            self.package, version)
+                continue
+            
             urlr  = url_join(urlh, match.group(1))
             
             return (version, urlr)
