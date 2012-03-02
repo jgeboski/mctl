@@ -239,7 +239,7 @@ class Server:
             archive = Archive(archive, self.archives[archive], self.path)
             archive.all()
     
-    def update(self, config, force = False, packages = None, exclude = None):
+    def upgrade(self, config, force = False, packages = None, exclude = None):
         if packages:
             if isinstance(packages, str):
                 packages = packages.split(",")
@@ -270,7 +270,7 @@ class Server:
             pkg  = Package(package, cpkg, self.path)
             
             version = config.versions.get(self.server, package)
-            version = pkg.update(version, force)
+            version = pkg.upgrade(version, force)
             
             config.versions.set(self.server, package, version)
         

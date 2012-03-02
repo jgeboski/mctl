@@ -34,7 +34,7 @@ class Package:
         else:
             self.path = swd
     
-    def update(self, version, force = False):
+    def upgrade(self, version, force = False):
         if not mkdir(self.path):
                 return version
         

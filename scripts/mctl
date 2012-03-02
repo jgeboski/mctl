@@ -83,10 +83,10 @@ acts.add_option(
     help    = "archive the server archive paths"
 )
 acts.add_option(
-    "-u", "--update",
+    "-u", "--upgrade",
     action  = "store_true",
-    dest    = "update",
-    help    = "update the server packages"
+    dest    = "upgrade",
+    help    = "upgrade the server packages"
 )
 acts.add_option(
     "-c", "--command",
@@ -176,8 +176,8 @@ server = Server(opts.server, server)
 if opts.archive:
     server.archive(opts.include, opts.exclude)
 
-if opts.update:
-    config = server.update(config, opts.force, opts.include, opts.exclude)
+if opts.upgrade:
+    config = server.upgrade(config, opts.force, opts.include, opts.exclude)
 
 if opts.stop:
     server.stop(opts.message)
