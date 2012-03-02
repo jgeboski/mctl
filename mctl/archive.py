@@ -23,11 +23,19 @@ class Archive:
         self.paths        = archive['paths']
         self.server_path  = server_path
     
-    def all(self):        
+    def all(self):
+        c = 0
+        
         for path in self.paths:
-            self.__path(path)
+            if self.__path(path):
+                c += 1
+        
+        log.info("%s: archived: %d of %d paths",
+            self.archive, c, len(self.paths))
     
     def oversized(self):
+        c = 0
+        
         if not self.max_size:
             return
         
@@ -37,7 +45,11 @@ class Archive:
             if not os.path.isfile(spath):
                 continue
             
-            self.__path(path, False)
+            if self.__path(path, False):
+                c += 1
+        
+        log.info("%s: archived: %d of %d oversized paths",
+            self.archive, c, len(self.paths))
     
     def __path(self, path, check_archives = True):
         spath = os.path.join(self.server_path, path)
@@ -49,7 +61,7 @@ class Archive:
         
         if os.path.isfile(spath):
             if not self.__check_max_size(spath):
-                return
+                return False
             
             ext = "bz2"
         else:
@@ -75,9 +87,11 @@ class Archive:
             unlink(spath)
         
         if res:
-            log.info("%s: archived: %s", self.archive, spath)
+            log.info("%s: path archived: %s", self.archive, spath)
         else:
             log.error("%s: path archiving failed: %s", self.archive, spath)
+        
+        return True
     
     def __check_max_size(self, path):
         if self.max_size < 1:
@@ -146,7 +160,6 @@ class Archive:
         fp.close()
         bzf.close()
         
-        log.info("Compressed: %s", path)
         return True
     
     def __compress_dir(self, path, apath):
@@ -163,8 +176,6 @@ class Archive:
         
         tf.add(path)
         tf.close()
-        
         os.chdir(cwd)
         
-        log.info("Compressed: %s", path)
         return True
