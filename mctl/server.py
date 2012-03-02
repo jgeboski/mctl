@@ -62,8 +62,12 @@ class _FakeChannel(dispatcher):
             self.send(self.__ping)
             return
         
+        if data[0] != '\x02':
+            self.send(str())
+            return
+        
         addr, port = self.addr
-        data       = data[4:]
+        data       = data[4:].split(";")[0]
         
         log.info("%s [%s:%d] attempted to join", data, addr, port)
         
