@@ -228,7 +228,7 @@ class Server:
             archives = self.archives.keys()
         
         for archive in archives:
-            archive = Archive(self.path, self.archives[archive])
+            archive = Archive(archive, self.archives[archive], self.path)
             archive.all()
     
     def update(self, config, force = False, packages = None, exclude = None):
@@ -254,7 +254,8 @@ class Server:
         
         for package in packages:
             if not config.package_exists(package):
-                log.error("Failed to update: %s: invalid package", package)
+                log.error("%s: package upgrade failed: invalid package",
+                    package)
                 return
             
             cpkg = config.package_get(package)
@@ -275,18 +276,19 @@ class Server:
             if force:
                 self.stop_fake()
             else:
-                log.error("Failed to start server: fake server is running")
+                log.error("%s: failed to start: fake server is running",
+                    self.server)
                 return
         
         if _screen_exists(self.screen_name):
-            log.error("Failed to start server: server is running")
+            log.error("%s: failed to start: server is running", self.server)
             return
         
         for archive in self.archives:
-            archive = Archive(self.path, self.archives[archive])
+            archive = Archive(archive, self.archives[archive], self.path)
             archive.oversized()
         
-        log.info("Starting server...")
+        log.info("%s: server starting...", self.server)
         
         os.chdir(self.path)
         _screen_new(self.screen_name, self.launch)
@@ -294,10 +296,10 @@ class Server:
         
     def stop(self, message = None):
         if not _screen_exists(self.screen_name):
-            log.error("Failed to stop server: server is not running")
+            log.error("%s: failed to stop: server is not running", self.server)
             return
         
-        log.info("Stopping server...")
+        log.info("%s: server stopping...", self.server)
         
         if message:
             self.command('say %s' % (message))
@@ -306,10 +308,9 @@ class Server:
         
         if s:
             while s >= 1:
-                say = "Server stopping in %s second(s)" % (s)
-                
-                self.command("say %s" % (say))
-                log.info(say)
+                self.command("say Server stopping in %s second(s)" % (s))
+                log.info("%s: server stopping: T minus %s seconds(s)",
+                    self.server, s)
                 
                 s -= 10
                 time.sleep(10)
@@ -328,12 +329,13 @@ class Server:
             if force:
                 self.stop(message)
             else:
-                log.error("Failed to start fake server: server is running")
+                log.error("%s: failed to start fake: server is running",
+                    self.server)
                 return
         
         if FakeServer.running(self.server):
-            log.error("Failed to start fake server: "
-                      "fake server is running")
+            log.error("%s: failed to start fake: fake server is running",
+                self.server)
             return
         
         path = os.path.join(self.path, "server.properties")
@@ -360,13 +362,14 @@ class Server:
         
         port = match.group(1)
         
-        log.info("Starting fake server...")
+        log.info("%s: fake server starting...", self.server)
         PFakeServer(self.server, addr, port, motd, message)
     
     def stop_fake(self):
         if not FakeServer.running(self.server):
-            log.error("Failed to stop fake server: fake server is not running")
+            log.error("%s: failed to stop fake: fake server is not running",
+                self.server)
             return
         
-        log.info("Stopping fake server...")
+        log.info("%s: fake server stopping...", self.server)
         FakeServer.kill(self.server)

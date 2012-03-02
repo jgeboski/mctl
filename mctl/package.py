@@ -45,12 +45,13 @@ class Package:
         elif self.updater == "jenkins":
             uver, urlh = self.__jenkins_info()
         else:
-            log.error("Failed to update: %s: invalid updater `%s'",
+            log.error("%s: package upgrade failed: invalid updater `%s'",
                       self.package, self.updater)
             
             return version
         
         if not urlh:
+            log.error("%s: package upgrade failed", self.package)
             return version
         
         out = os.path.join(self.path, "%s.%s" % (
@@ -58,13 +59,13 @@ class Package:
         ))
         
         if uver and uver == version and not force:
-            log.info("Failed to update: %s: already up to date", self.package)
+            log.info("%s: package already up-to-date", self.package)
             return version
         
         if not download(urlh, out):
             return version
         
-        log.info("Updated package: %s from %s to %s",
+        log.info("%s: package upgraded: %s -> %s",
                  self.package, version, uver)
         
         if self.type != "zip":
@@ -124,7 +125,7 @@ class Package:
         if match:
             version = match.group(1)
         else:
-            log.warning("Version extraction failed: %s: reported version `%s'",
+            log.warning("%s: version extraction failed: reported version `%s'",
                         self.package, version)
             
             version = None
@@ -148,8 +149,8 @@ class Package:
             ".*dl.bukkit.org/downloads/(\w+)(/(?:list)/(\w+))?/?", self.url)
         
         if not match or not match.group(1):
-            log.error("URL parsing failed: %s: invalid bukkitdl URL: %s",
-                self.package, self.url)
+            log.error("%s: URL parsing failed: invalid bukkitdl URL",
+                self.package)
             return
         
         urlh = "http://dl.bukkit.org/api/1.0/downloads/" \
@@ -234,7 +235,7 @@ class Package:
             match = re.search("\"(artifact/\S+\.%s)\"" % (self.type), data)
             
             if not match:
-                log.warning("Failed to get download URL: %s (version: %s): "
+                log.warning("%s: failed to get download URL: (version: %s) "
                             "reverting to previous version",
                             self.package, version)
                 continue

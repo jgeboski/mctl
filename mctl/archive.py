@@ -12,16 +12,16 @@ from util    import fopen, mkdir, unlink
 log = logging.getLogger("mctl")
 
 class Archive:
-    def __init__(self, server_path, archive):
+    def __init__(self, name, archive, server_path):
         if not server_path or not archive:
             return
         
-        self.server_path  = server_path
-        
+        self.archive      = name
         self.path         = archive['path']
         self.max_size     = archive['max-size']
         self.max_archives = archive['max-archives']
         self.paths        = archive['paths']
+        self.server_path  = server_path
     
     def all(self):        
         for path in self.paths:
@@ -43,8 +43,9 @@ class Archive:
         spath = os.path.join(self.server_path, path)
         
         if not os.path.exists(spath):
-            log.error("Failed to archive: %s: nonexistent path", spath)
-            return
+            log.error("%s: path archiving failed: nonexistent path: %s",
+                self.archive, spath)
+            return False
         
         if os.path.isfile(spath):
             if not self.__check_max_size(spath):
@@ -74,9 +75,9 @@ class Archive:
             unlink(spath)
         
         if res:
-            log.info("Archived: %s", spath)
+            log.info("%s: archived: %s", self.archive, spath)
         else:
-            log.error("Failed to archive: %s", spath)
+            log.error("%s: path archiving failed: %s", self.archive, spath)
     
     def __check_max_size(self, path):
         if self.max_size < 1:
@@ -106,13 +107,7 @@ class Archive:
             unlink(archive)
     
     def __compress_file(self, path, apath):
-        fpath = os.path.join(self.server_path, path)
-        
-        if not os.path.isfile(fpath):
-            log.error("Failed to archive: %s: nonexistent path", spath)
-            return False
-        
-        fp = fopen(fpath, "r")
+        fp = fopen(path, "r")
         
         if not fp:
             return False
@@ -123,8 +118,8 @@ class Archive:
             log.error("Failed to open: %s", apath)
             return False
         
-        fsize = os.path.getsize(fpath)
-        l     = 0
+        size = os.path.getsize(path)
+        l    = 0
         
         while True:
             data = fp.read(1024)
@@ -137,7 +132,7 @@ class Archive:
             if log.level != logging.INFO:
                 continue
             
-            p = (float(fp.tell()) / float(fsize)) * 100
+            p = (float(fp.tell()) / float(size)) * 100
             p = int(floor(p))
             
             if l == p:
