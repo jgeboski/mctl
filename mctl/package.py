@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 import re
@@ -39,6 +40,8 @@ class Package:
         
         if self.updater == "bukkitdev":
             uver, urlh = self.__bukkitdev_info()
+        elif self.updater == "bukkitdl":
+            uver, urlh = self.__bukkitdl_info()
         elif self.updater == "jenkins":
             uver, urlh = self.__jenkins_info()
         else:
@@ -139,7 +142,47 @@ class Package:
             return (version, None)
         
         return (version, match.group(1))
-
+    
+    def __bukkitdl_info(self):
+        match = re.match(
+            ".*dl.bukkit.org/downloads/(\w+)(/(?:list)/(\w+))?/?", self.url)
+        
+        if not match or not match.group(1):
+            log.error("URL parsing failed: %s: invalid bukkitdl URL: %s",
+                self.package, self.url)
+            return
+        
+        urlh = "http://dl.bukkit.org/api/1.0/downloads/" \
+               "projects/%s/artifacts/" % (match.group(1))
+        
+        if match.group(3):
+            urlh += "%s/" % (match.group(3))
+        
+        page = 1
+        
+        while True:
+            data  = url_get("%s?page=%d" % (urlh, page))
+            page += 1
+            
+            if not data:
+                break
+            
+            data = json.loads(data)
+            
+            if (not 'pages' in data) or (data['pages'] < page):
+                break
+            
+            if not 'results' in data:
+                break
+            
+            for item in data['results']:
+                if item['is_broken']:
+                    continue
+                
+                return (item['build_number'], item['file']['url'])
+        
+        return (None, None)
+    
     def __jenkins_info(self):
         urlh = url_join(self.url, "rssAll")
         data = url_get(urlh)
