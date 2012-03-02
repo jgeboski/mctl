@@ -98,6 +98,20 @@ acts.add_option(
 )
 
 attrs.add_option(
+    "--packages",
+    action  = "store",
+    dest    = "packages",
+    metavar = "LIST",
+    help    = "list of packages to update"
+)
+attrs.add_option(
+    "--exclude",
+    action  = "store",
+    dest    = "exclude",
+    metavar = "LIST",
+    help    = "list of packages to exclude from update"
+)
+attrs.add_option(
     "--motd",
     action  = "store",
     dest    = "motd",
@@ -164,7 +178,7 @@ if opts.archive:
     server.archive(opts.archive)
 
 if opts.update:
-    config = server.update(config, opts.force)
+    config = server.update(config, opts.force, opts.packages, opts.exclude)
 
 if opts.stop:
     server.stop(opts.message)

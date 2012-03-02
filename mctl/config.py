@@ -165,10 +165,7 @@ class Config:
         if not server:
             return False
         
-        if server in self.__config['servers']:
-            return True
-        
-        return False
+        return server in self.__config['servers']
     
     def server_get(self, server):
         if not server:
@@ -224,6 +221,12 @@ class Config:
         }
         
         return package
+    
+    def package_exists(self, server):
+        if not server:
+            return False
+        
+        return server in self.__config['packages']
     
     def package_get(self, package):
         if not package:

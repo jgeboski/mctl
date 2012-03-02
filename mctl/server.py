@@ -231,8 +231,32 @@ class Server:
             archive = Archive(self.path, self.archives[archive])
             archive.all()
     
-    def update(self, config, force = False):
-        for package in self.packages:
+    def update(self, config, force = False, packages = None, exclude = None):
+        if packages:
+            if isinstance(packages, str):
+                packages = packages.split(",")
+            elif not isinstance(packages, list):
+                packages = self.packages
+        else:
+            packages = self.packages
+        
+        if exclude:
+            if isinstance(exclude, str):
+                exclude = exclude.split(",")
+            elif not isinstance(exclude, list):
+                exclude = list()
+            
+            for e in exclude:
+                try:
+                    packages.remove(e)
+                except ValueError:
+                    pass
+        
+        for package in packages:
+            if not config.package_exists(package):
+                log.error("Failed to update: %s: invalid package", package)
+                return
+            
             cpkg = config.package_get(package)
             pkg  = Package(package, cpkg, self.path)
             
