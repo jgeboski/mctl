@@ -214,18 +214,26 @@ class Server:
     def command(self, command):
         _screen_command_send(self.screen_name, command)
     
-    def archive(self, archive):
-        if not archive:
-            return
-        
-        archives = list()
-        
-        if archive != "all":
-            for archive in archive.split(","):
-                if archive in self.archives:
-                    archives.append(archive)
+    def archive(self, archives = None, exclude = None):
+        if archives:
+            if isinstance(archives, str):
+                archives = archives.split(",")
+            elif not isinstance(archives, list):
+                archives = self.archives.keys()
         else:
             archives = self.archives.keys()
+        
+        if exclude:
+            if isinstance(exclude, str):
+                exclude = exclude.split(",")
+            elif not isinstance(exclude, list):
+                exclude = list()
+            
+            for e in exclude:
+                try:
+                    archives.remove(e)
+                except ValueError:
+                    pass
         
         for archive in archives:
             archive = Archive(archive, self.archives[archive], self.path)

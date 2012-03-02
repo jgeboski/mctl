@@ -77,17 +77,16 @@ acts.add_option(
     help    = "stop the fake sever"
 )
 acts.add_option(
+    "-a", "--archive",
+    action  = "store_true",
+    dest    = "archive",
+    help    = "archive the server archive paths"
+)
+acts.add_option(
     "-u", "--update",
     action  = "store_true",
     dest    = "update",
     help    = "update the server packages"
-)
-acts.add_option(
-    "-a", "--archive",
-    action  = "store",
-    dest    = "archive",
-    metavar = "ARCHIVES",
-    help    = "the run the archiver on the archives"
 )
 acts.add_option(
     "-c", "--command",
@@ -98,18 +97,18 @@ acts.add_option(
 )
 
 attrs.add_option(
-    "--packages",
+    "--include",
     action  = "store",
-    dest    = "packages",
+    dest    = "include",
     metavar = "LIST",
-    help    = "list of packages to update"
+    help    = "list archives or packages to include"
 )
 attrs.add_option(
     "--exclude",
     action  = "store",
     dest    = "exclude",
     metavar = "LIST",
-    help    = "list of packages to exclude from update"
+    help    = "list archives or packages to exclude"
 )
 attrs.add_option(
     "--motd",
@@ -175,10 +174,10 @@ config.server_set(opts.server, server)
 server = Server(opts.server, server)
 
 if opts.archive:
-    server.archive(opts.archive)
+    server.archive(opts.include, opts.exclude)
 
 if opts.update:
-    config = server.update(config, opts.force, opts.packages, opts.exclude)
+    config = server.update(config, opts.force, opts.include, opts.exclude)
 
 if opts.stop:
     server.stop(opts.message)
