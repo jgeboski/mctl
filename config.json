@@ -6,10 +6,11 @@
             "timeout": 60,
             
             "packages": [
-                "CraftBukkit", "CraftIRC",    "dynmap",
-                "LWC",         "LogBlock",    "Minequery",
-                "NoCheat",     "Permissions", "PermissionsEx",
-                "Spout",       "WorldEdit",   "WorldGuard"
+                "AllowPlayers",   "CraftBukkit",    "CraftIRC"     "dynmap",
+                "Honeypot",       "LogBlock",       "LWC",         "mcMMO",
+                "Minequery",      "MobDisguise",    "NoCheat",     "PermissionsCompat",
+                "PermissionsEx",  "PhysicalShop",   "SpamHammer",  "Spout",
+                "Transporter",    "VanishNoPacket", "WorldEdit",   "WorldGuard"
             ],
             
             "archives": {
@@ -31,11 +32,19 @@
     },
     
     "packages": {
+        "AllowPlayers": {
+            "path"   : "plugins",
+            "type"   : "jar",
+            "url"    : "http://dev.bukkit.org/server-mods/allowplayers/",
+            "updater": "bukkitdev",
+            "extract": []
+        },
+        
         "CraftBukkit": {
             "path"   : null,
             "type"   : "jar",
-            "url"    : "http://ci.bukkit.org/job/dev-CraftBukkit/",
-            "updater": "jenkins",
+            "url"    : "http://dl.bukkit.org/downloads/craftbukkit/list/dev/",
+            "updater": "bukkitdl",
             "extract": []
         },
         
@@ -49,8 +58,25 @@
         
         "dynmap": {
             "path"   : "plugins",
-            "type"   : "jar",
+            "type"   : "zip",
             "url"    : "http://webbukkit.org:8080/job/dynmap/",
+            "updater": "jenkins",
+            "extract": ["dynmap.jar", "dynmap"]
+        },
+        
+        "Honeypot": {
+            "path"   : "plugins",
+            "type"   : "jar",
+            "url"    : "http://dev.bukkit.org/server-mods/honeypot/",
+            "updater": "bukkitdev",
+            "extract": []
+        },
+
+        
+        "LogBlock": {
+            "path"   : "plugins",
+            "type"   : "jar",
+            "url"    : "http://diddiz.insane-architects.net:8080/job/LogBlock/",
             "updater": "jenkins",
             "extract": []
         },
@@ -63,10 +89,10 @@
             "extract": []
         },
         
-        "LogBlock": {
+        "mcMMO": {
             "path"   : "plugins",
             "type"   : "jar",
-            "url"    : "http://diddiz.insane-architects.net:8080/job/LogBlock/",
+            "url"    : "http://ci.mcmmo.org/job/mcMMO/",
             "updater": "jenkins",
             "extract": []
         },
@@ -79,6 +105,14 @@
             "extract": ["Minequery.jar"]
         },
         
+        "MobDisguise": {
+            "path"   : "plugins",
+            "type"   : "jar",
+            "url"    : "http://dev.bukkit.org/server-mods/mobdisguise/",
+            "updater": "bukkitdev",
+            "extract": []
+        },
+        
         "NoCheat": {
             "path"   : "plugins",
             "type"   : "jar",
@@ -87,7 +121,7 @@
             "extract": []
         },
         
-        "Permissions": {
+        "PermissionsCompat": {
             "path"   : "plugins",
             "type"   : "jar",
             "url"    : "http://webbukkit.org:8080/job/PermissionsCompat/",
@@ -103,11 +137,43 @@
             "extract": []
         },
         
+        "PhysicalShop": {
+            "path"   : "plugins",
+            "type"   : "jar",
+            "url"    : "http://dev.bukkit.org/server-mods/physicalshop/",
+            "updater": "bukkitdev",
+            "extract": []
+        },
+        
+        "SpamHammer": {
+            "path"   : "plugins",
+            "type"   : "jar",
+            "url"    : "http://dev.bukkit.org/server-mods/spamhammer/",
+            "updater": "bukkitdev",
+            "extract": []
+        },
+        
         "Spout": {
             "path"   : "plugins",
             "type"   : "jar",
             "url"    : "http://ci.spout.org/job/SpoutPlugin/",
             "updater": "jenkins",
+            "extract": []
+        },
+        
+        "Transporter": {
+            "path"   : "plugins",
+            "type"   : "jar",
+            "url"    : "http://dev.bukkit.org/server-mods/transporter/",
+            "updater": "bukkitdev",
+            "extract": []
+        },
+        
+        "VanishNoPacket": {
+            "path"   : "plugins",
+            "type"   : "jar",
+            "url"    : "http://dev.bukkit.org/server-mods/vanish/",
+            "updater": "bukkitdev",
             "extract": []
         },
         
