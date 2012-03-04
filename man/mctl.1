@@ -1,0 +1,157 @@
+.TH mctl 1 "March 03, 2012" mctl
+.SH NAME
+mctl \- Minecraft server controller
+.SH SYNOPSIS
+.B mctl
+.BR \-h ", " \-\-help
+.br
+.B mctl
+.RB [ \-c ", " \-\-config " "
+.IR PATH ]
+.BR \-l ", " \-\-list
+.br
+.B mctl
+.RB [ \-c ", " \-\-config " "
+.IR PATH ]
+.BR \-s ", " \-\-server " "
+.I SERVER
+.RB [ \-f ", " \-\-force ]
+.RI [ ACTION ]...
+.RI [ ATTRIBUTES ]...
+.SH DESCRIPTION
+.B mctl
+is a Minecraft server controller script.
+.B mctl
+handles simple server management tasks such as starting, stopping, and
+restarting.  Additionally,
+.B mctl
+handles more advanced tasks such as archiving and the upgrading of packages.
+.B mctl
+also has the ability to run as a 'fake' server and act as a place holder when
+the main server needs to go offline.
+.SH OPTIONS
+.HP
+.BR \-g ", " \-\-config
+.I PATH
+.br
+Specify the JSON configuration file to use.
+.HP
+.BR \-s ", " \-\-server
+.I SERVER
+.br
+Specify the server to apply actions and attributes to.
+.TP
+.BR \-f ", " \-\-force
+Force all actions to take place.
+.TP
+.BR \-h ", " \-\-help
+Show a help message and exit.
+.TP
+.BR \-l, ", " \-\-list
+Show a list of servers in the configuration.
+.SH ACTIONS
+.TP
+.BR \-a ", " \-\-archive
+Archive all of the archives configured.
+.B \-\-include
+can be used to archive only specific archives.
+.B \-\-exclude
+can be used to archive all archives but the excluded archives.
+.TP
+.BR \-u ", " \-\-upgrade
+Upgrade all of the packages configured.
+.B \-\-include
+can be used to upgrade only specific packages.
+.B \-\-exclude
+can be used to upgrade all packages but the excluded packages.
+.TP
+.BR \-i ", " \-\-start
+Start the specified server.
+.TP
+.BR \-q ", " \-\-stop
+Stop the specified server.
+.TP
+.BR \-r ", " \-\-restart
+Restart the specified server.
+.HP
+.BR \-c ", " \-\-command
+.I COMMAND
+.br
+Run a command on the server.
+.TP
+.BR \-e ", " \-\-fake\-start
+Start the fake server for the specified server.
+.TP
+.BR \-k ", " \-\-fake\-stop
+Stop the fake server for the specified server.
+.SH ATTRIBUTES
+.HP
+.B \-\-include
+.I LIST
+.br
+Specify archive(s) or package(s) to include when
+.B \-\-archive 
+or
+.B \-\-upgrade
+are used.  This will override any packages and only apply operation to
+the package(s) specified.
+.HP
+.B \-\-exclude
+.I LIST
+.br
+Specify archive(s) or package(s) to exclude when
+.B \-\-archive 
+or
+.B \-\-upgrade
+are used.
+.HP
+.B \-\-message
+.I MESSAGE
+.br
+Specify a message to be displayed when the server is stopped or restarted.
+.HP
+.B \-\-timeout
+.I TIMEOUT
+.br
+Specify a timeout, in seconds, for the server when stopping or restarting.
+.HP
+.B \-\-fake\-motd
+.I MOTD
+.br
+Specify a message of the day (MOTD) for the fake server.
+.HP
+.B \-\-fake\-message
+.I MESSAGE
+.br
+Specify a kick message for the fake server.
+.SH FILES
+.TP
+.I ~/.mctl/config.json
+The main configuration file for
+.BR mctl .
+.SH EXAMPLES
+.HP
+.B mctl \-s example \-\-stop \-\-fake\-start
+.B \-\-timeout=30 \-message="Stopping server..."
+.B \-\-fake\-message="Server is undergoing maintenance, try back later"
+.br
+Stop the server after 30 seconds and start the fake server with messages.
+.HP
+.B mctl \-s example \-\-restart \-\-timeout=30
+.B \-\-message="Restarting server..."
+.br
+Restart the server after 30 seconds and display the message:
+Restarting server...
+.TP
+.B mctl \-s example \-\-archive \-\-include=backup
+Run the archiver on the backup archive
+.TP
+.B mctl \-s example \-\-upgrade \-\-include=CraftBukkit,dynamp
+Upgrade only the CraftBukkit and dynmap packages
+.TP
+.B mctl \-s example \-\-upgrade \-\-exclude=Spout
+Upgrade all packages but Spout
+.TP
+.B 
+.SH "SEE ALSO"
+mctl\-fake(1)

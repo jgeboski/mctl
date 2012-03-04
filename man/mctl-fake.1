@@ -1,0 +1,74 @@
+.TH mctl\-fake 1 "March 03, 2012" mctl\-fake
+.SH NAME
+mctl\-fake \- Fake Minecraft server
+.SH SYNOPSIS
+.B mctl
+.BR \-h ", " \-\-help
+.br
+.B mctl
+.BR \-s ", " \-\-server " "
+.I SERVER
+.RB [ \-k ", " \-\-kill ]
+.br
+.B mctl
+.BR \-s ", " \-\-server " "
+.I SERVER
+.RI [ ATTRIBUTES ]...
+.SH DESCRIPTION
+.B mctl\-fake
+is a fake Minecraft server script.  It accepts ping and handshake
+packets from Minecraft clients.  When a user attempts to connect,
+they are greeted with
+.B \-\-message.
+This is extremely convenient for informing users of downtime while
+the server is offline.
+.SH OPTIONS
+.HP
+.BR \-s ", " \-\-server
+.I SERVER
+.br
+Specify the server to apply actions and attributes to.
+.TP
+.BR \-h ", " \-\-help
+Show a help message and exit.
+.SH ACTIONS
+.TP
+.B \-k ", " \-\-kill
+Kill the fake server
+.SH ATTRIBUTES
+.HP
+.B \-\-addr
+.I ADDRESS
+.br
+Specify an address for the fake server to bind to.
+.HP
+.B \-\-port
+.I PORT
+.br
+Specify a port for the fake server to bind to.
+.HP
+.B \-\-motd
+.I MOTD
+.br
+Specify a message of the day (MOTD) for the fake server.
+.HP
+.B \-\-message
+.I MESSAGE
+.br
+Specify a kick message for the fake server.
+.SH FILES
+.TP
+.I ~/.mctl/config.json
+The main configuration file for
+.BR mctl .
+.SH EXAMPLES
+.HP
+.B mctl \-s example \-\-addr=127.0.0.1 \-\-port=25565 \-\-motd="Server Offline"
+.B \-\-message="Server is undergoing maintenance, try back later"
+.br
+Start the fake server on 127.0.0.1:25565 with a MOTD and kick message.
+.TP
+.B mctl \-s example \-\-kill
+Kill the fake server
+.SH "SEE ALSO"
+mctl(1)
