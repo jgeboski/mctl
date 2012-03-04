@@ -47,6 +47,18 @@ parser.add_option(
 )
 
 acts.add_option(
+    "-a", "--archive",
+    action  = "store_true",
+    dest    = "archive",
+    help    = "archive the server archive paths"
+)
+acts.add_option(
+    "-u", "--upgrade",
+    action  = "store_true",
+    dest    = "upgrade",
+    help    = "upgrade the server packages"
+)
+acts.add_option(
     "-i", "--start",
     action  = "store_true",
     dest    = "start",
@@ -63,18 +75,6 @@ acts.add_option(
     action  = "store_true",
     dest    = "restart",
     help    = "restart the sever"
-)
-acts.add_option(
-    "-a", "--archive",
-    action  = "store_true",
-    dest    = "archive",
-    help    = "archive the server archive paths"
-)
-acts.add_option(
-    "-u", "--upgrade",
-    action  = "store_true",
-    dest    = "upgrade",
-    help    = "upgrade the server packages"
 )
 acts.add_option(
     "-c", "--command",
