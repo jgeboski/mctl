@@ -29,7 +29,8 @@ parser.add_option(
     metavar = "SERVER",
     help    = "server to apply actions and attributes to"
 )
-parser.add_option(
+
+acts.add_option(
     "-k", "--kill",
     action  = "store_true",
     dest    = "kill",
