@@ -332,7 +332,7 @@ class Server:
         self.stop(message)
         self.start()
     
-    def start_fake(self, motd = None, message = None, force = False):
+    def fake_start(self, motd = None, message = None, force = False):
         if _screen_exists(self.screen_name):
             if force:
                 self.stop(message)
@@ -373,7 +373,7 @@ class Server:
         log.info("%s: fake server starting...", self.server)
         PFakeServer(self.server, addr, port, motd, message)
     
-    def stop_fake(self):
+    def fake_stop(self):
         if not FakeServer.running(self.server):
             log.error("%s: failed to stop fake: fake server is not running",
                 self.server)

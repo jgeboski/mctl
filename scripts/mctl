@@ -65,18 +65,6 @@ acts.add_option(
     help    = "restart the sever"
 )
 acts.add_option(
-    "-e", "--start-fake",
-    action  = "store_true",
-    dest    = "start_fake",
-    help    = "start the fake sever"
-)
-acts.add_option(
-    "-k", "--stop-fake",
-    action  = "store_true",
-    dest    = "stop_fake",
-    help    = "stop the fake sever"
-)
-acts.add_option(
     "-a", "--archive",
     action  = "store_true",
     dest    = "archive",
@@ -95,6 +83,18 @@ acts.add_option(
     metavar = "COMMAND",
     help    = "run a command on the server"
 )
+acts.add_option(
+    "-e", "--fake-start",
+    action  = "store_true",
+    dest    = "fake_start",
+    help    = "start the fake sever"
+)
+acts.add_option(
+    "-k", "--fake-stop",
+    action  = "store_true",
+    dest    = "fake_stop",
+    help    = "stop the fake sever"
+)
 
 attrs.add_option(
     "--include",
@@ -111,18 +111,11 @@ attrs.add_option(
     help    = "list archives or packages to exclude"
 )
 attrs.add_option(
-    "--motd",
-    action  = "store",
-    dest    = "motd",
-    metavar = "MOTD",
-    help    = "MOTD for a fake server"
-)
-attrs.add_option(
     "--message",
     action  = "store",
     dest    = "message",
     metavar = "MESSAGE",
-    help    = "message for restart/stop/kick"
+    help    = "message for restart/stop"
 )
 attrs.add_option(
     "--timeout",
@@ -130,6 +123,20 @@ attrs.add_option(
     dest    = "timeout",
     metavar = "TIMEOUT",
     help    = "server shutdown timeout in seconds"
+)
+attrs.add_option(
+    "--fake-motd",
+    action  = "store",
+    dest    = "fake_motd",
+    metavar = "MOTD",
+    help    = "MOTD for fake server"
+)
+attrs.add_option(
+    "--fake-message",
+    action  = "store",
+    dest    = "fake_message",
+    metavar = "MESSAGE",
+    help    = "kick message for fake server"
 )
 
 parser.add_option_group(acts)
@@ -182,13 +189,13 @@ if opts.upgrade:
 if opts.stop:
     server.stop(opts.message)
 
-if opts.stop_fake:
-    server.stop_fake()
+if opts.fake_stop:
+    server.fake_stop()
 
 if opts.start:
     server.start(opts.force)
-elif opts.start_fake:
-    server.start_fake(opts.motd, opts.message, opts.force)
+elif opts.fake_start:
+    server.fake_start(opts.fake_motd, opts.fake_message, opts.force)
 
 if opts.restart:
     server.restart(opts.message)
