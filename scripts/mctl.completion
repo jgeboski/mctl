@@ -1,0 +1,25 @@
+# mctl(1) completion
+
+_mctl()
+{
+    COMPREPLY=()
+    local cur prev
+    _get_comp_words_by_ref cur prev
+
+    case $prev in
+        -s|--server)
+            local args=$( mctl "$1" --list | cut -c12- | sed 's/,//g' )
+            COMPREPLY=( $( compgen -W '$args' -- "$cur" ) )
+            return 0
+            ;;
+    esac
+    
+    local args="
+        -a  -c  -e  -f  -g  -h  -i  -k  -l  -q  -r  -s  -u
+        --archive --command --config --exclude --fake-message --fake-motd
+        --fake-start --fake-stop --force --help --include --list --message
+        --restart --server --start --stop --timeout --upgrade"
+    
+    COMPREPLY=( $( compgen -W '$args' -- "$cur" ) )
+} &&
+complete -F _mctl mctl

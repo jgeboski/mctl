@@ -1,0 +1,22 @@
+# mctl-fake(1) completion
+
+_mctl_fake()
+{
+    COMPREPLY=()
+    local cur prev
+    _get_comp_words_by_ref cur prev
+
+    case $prev in
+        -s|--server)
+            local args=$( mctl "$1" --list | cut -c12- | sed 's/,//g' )
+            COMPREPLY=( $( compgen -W '$args' -- "$cur" ) )
+            return 0
+            ;;
+    esac
+    
+    local args="
+        -h -k -s --addr --help --kill --message --motd --port --server"
+    
+    COMPREPLY=( $( compgen -W '$args' -- "$cur" ) )
+} &&
+complete -F _mctl_fake mctl-fake
