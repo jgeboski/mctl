@@ -158,8 +158,8 @@ class Package:
         urlh = "http://dl.bukkit.org/api/1.0/downloads/" \
                "projects/%s/artifacts/" % (match.group(1))
         
-        if match.group(2):
-            urlh += "%s/" % (match.group(3))
+        if match.lastindex == 2:
+            urlh += "%s/" % (match.group(2))
         
         page = 1
         
