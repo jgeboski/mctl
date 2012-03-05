@@ -32,8 +32,8 @@ class mctl_install(install):
         if self.install_completion:
             self.distribution.data_files.append(
                 (self.install_completion,
-                    ['scripts/mctl.completion',
-                     'scripts/mctl-fake.completion'])
+                    ['scripts/completion/mctl',
+                     'scripts/completion/mctl-fake'])
             )
         
         if self.install_man:
