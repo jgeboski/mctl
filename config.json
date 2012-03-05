@@ -6,11 +6,14 @@
             "timeout": 60,
             
             "packages": [
-                "AllowPlayers",   "CraftBukkit",    "CraftIRC"     "dynmap",
-                "Honeypot",       "LogBlock",       "LWC",         "mcMMO",
-                "Minequery",      "MobDisguise",    "NoCheat",     "PermissionsCompat",
-                "PermissionsEx",  "PhysicalShop",   "SpamHammer",  "Spout",
-                "Transporter",    "VanishNoPacket", "WorldEdit",   "WorldGuard"
+                "AllowPlayers",  "CraftBukkit",       "CraftIRC",
+                "dynmap",        "Essentials",        "Essentials-extra",
+                "Honeypot",      "LogBlock",          "LWC",
+                "mcMMO",         "Minequery",         "MobDisguise",
+                "NoCheat",       "PermissionsCompat", "PermissionsEx",
+                "PhysicalShop",  "SpamHammer",        "Spout",
+                "Transporter",   "VanishNoPacket",    "WorldEdit",
+                "WorldGuard"
             ],
             
             "archives": {
@@ -64,6 +67,24 @@
             "extract": ["dynmap.jar", "dynmap"]
         },
         
+        "Essentials": {
+            "path"   : "plugins",
+            "type"   : "zip",
+            "url"    : "https://github.com/essentials/Essentials",
+            "updater": "githubdl",
+            "extract": [
+                "Essentials.jar", "EssentialsChat.jar", "EssentialsSpawn.jar"
+            ]
+        },
+        
+        "Essentials-extra": {
+            "path"   : "plugins",
+            "type"   : "zip",
+            "url"    : "https://github.com/essentials/Essentials",
+            "updater": "githubdl",
+            "extract": ["EssentialsGeoIP.jar"]
+        },
+        
         "Honeypot": {
             "path"   : "plugins",
             "type"   : "jar",
@@ -71,7 +92,6 @@
             "updater": "bukkitdev",
             "extract": []
         },
-
         
         "LogBlock": {
             "path"   : "plugins",
