@@ -79,17 +79,17 @@ class Archive:
         apath = os.path.join(self.path, apath)
         
         if os.path.isfile(spath):
-            res = self.__compress_file(path, apath)
+            res = self.__compress_file(spath, apath)
         else:
             res = self.__compress_dir(path, apath)
         
-        if self.max_size >= 1:
+        if res and self.max_size >= 1:
             unlink(spath)
         
         if res:
             log.info("%s: path archived: %s", self.archive, spath)
         else:
-            log.error("%s: path archiving failed: %s", self.archive, spath)
+            log.error("%s: failed to archive path: %s", self.archive, spath)
         
         return True
     

@@ -30,7 +30,7 @@ def fopen(path, mode = "r", create_path = False):
     try:
         fp = open(path, mode)
     except IOError, msg:
-        log.error("Failed to open: %s: %s", self.__path, msg)
+        log.error("Failed to open: %s: %s", path, msg)
         fp = None
     
     return fp
