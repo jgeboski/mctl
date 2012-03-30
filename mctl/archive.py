@@ -70,7 +70,7 @@ class Archive:
         mkdir(self.path)
         
         name  = os.path.basename(path)
-        apath = os.path.join(self.path, "%s.\d+.%s" % (name, ext))
+        apath = os.path.join(self.path, "%s.*.%s" % (name, ext))
         
         if check_archives:
             self.__check_max_archives(apath)
@@ -114,11 +114,11 @@ class Archive:
         if size < self.max_archives:
             return
         
-        files = reversed(files.sort())
-        size  = size - self.max_archives
+        size = (size + 1) - self.max_archives
+        files.sort()
         
-        for archive in range(size):
-            unlink(archive)
+        for i in range(size):
+            unlink(files[i])
     
     def __compress_file(self, path, apath):
         fp = fopen(path, "r")
