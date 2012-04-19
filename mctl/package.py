@@ -246,7 +246,7 @@ class Package:
                 urlr = url_join(urlh, match.group(1))
                 return (version, urlr)
             
-            match = re.search("\"(\S+\$%s)/\"" % (self.package), data)
+            match = re.search("\"(\S+\$%s)/\"" % (self.package), data, re.I)
             
             if not match:
                 continue
