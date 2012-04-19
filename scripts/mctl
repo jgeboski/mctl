@@ -183,14 +183,14 @@ server = Server(opts.server, server)
 if opts.archive:
     server.archive(opts.include, opts.exclude)
 
-if opts.upgrade:
-    config = server.upgrade(config, opts.force, opts.include, opts.exclude)
-
 if opts.stop:
     server.stop(opts.message)
 
 if opts.fake_stop:
     server.fake_stop()
+
+if opts.upgrade:
+    server.upgrade(config, opts.force, opts.include, opts.exclude)
 
 if opts.start:
     server.start(opts.force)
