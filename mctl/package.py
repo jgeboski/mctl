@@ -21,13 +21,14 @@ def _xml_child_get(node, name):
     return None
 
 class Package:
-    def __init__(self, name, package, swd):
+    def __init__(self, name, package, swd, dryrun):
         self.package = name
         self.path    = package['path']
         self.type    = package['type']
         self.url     = package['url']
         self.updater = package['updater']
         self.extract = package['extract']
+        self.dryrun  = dryrun
         
         if self.path:
             self.path = os.path.join(swd, self.path)
@@ -56,21 +57,19 @@ class Package:
             log.error("%s: package upgrade failed", self.package)
             return version
         
-        out = os.path.join(self.path, "%s.%s" % (
-            self.package, self.type
-        ))
+        out = os.path.join(self.path, "%s.%s" % (self.package, self.type))
         
         if uver and uver == version and not force:
             log.info("%s: package already up-to-date", self.package)
             return version
         
-        if not download(urlh, out):
+        if not self.dryrun and not download(urlh, out):
             return version
         
         log.info("%s: package upgraded: %s -> %s",
                  self.package, version, uver)
         
-        if self.type != "zip":
+        if self.dryrun or (self.type != "zip"):
             return uver
         
         if len(self.extract) < 1:

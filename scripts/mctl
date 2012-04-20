@@ -45,6 +45,12 @@ parser.add_option(
     dest    = "force",
     help    = "force specified actions"
 )
+parser.add_option(
+    "-d", "--dry-run",
+    action  = "store_true",
+    dest    = "dryrun",
+    help    = "run on a trial basis; do not modify packages"
+)
 
 acts.add_option(
     "-a", "--archive",
@@ -190,7 +196,8 @@ if opts.fake_stop:
     server.fake_stop()
 
 if opts.upgrade:
-    server.upgrade(config, opts.force, opts.include, opts.exclude)
+    server.upgrade(config, opts.force, opts.include,
+                   opts.exclude, opts.dryrun)
 
 if opts.start:
     server.start(opts.force)
