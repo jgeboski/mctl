@@ -66,7 +66,9 @@ def download(url, path):
         ul.close()
         return False
     
+    f = os.path.basename(url)
     l = 0
+    
     while True:
         data = ul.read(1024)
         
@@ -85,14 +87,14 @@ def download(url, path):
             continue
         
         sys.stdout.write("\033[2K")
-        sys.stdout.write("Downloading(%d%%): %s\r" % (p, url))
+        sys.stdout.write("Downloading(%d%%): %s\r" % (p, f))
         sys.stdout.flush()
         l = p
     
     ul.close()
     fp.close()
     
-    log.info("Downloaded: %s", url)
+    log.info("Downloaded: %s", f)
     return True
 
 def url_get(url):
