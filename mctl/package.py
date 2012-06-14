@@ -239,7 +239,12 @@ class Package:
             if not data:
                 continue
             
-            match = re.search("\"(artifact/\S+\.%s)\"" % (self.type), data)
+            fr    = "\S*%s\S*-SNAPSHOT.%s" % (self.package, self.type)
+            match = re.search("\"(artifact/%s)\"" % (fr), data, re.I)
+            
+            if not match:
+                fr    = "\S+.%s" % (self.type)
+                match = re.search("\"(artifact/%s)\"" % (fr), data, re.I)
             
             if match:
                 urlr = url_join(urlh, match.group(1))
@@ -256,7 +261,7 @@ class Package:
             if not data:
                 continue
             
-            match = re.search("\"(artifact/\S+\.%s)\"" % (self.type), data)
+            match = re.search("\"(artifact/%s)\"" % (fr), data, re.I)
             
             if not match:
                 log.warning("%s: failed to get download URL: (version: %s) "
