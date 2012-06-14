@@ -331,10 +331,6 @@ class Server:
         
         _screen_join(self.screen_name)
     
-    def restart(self, message = None):
-        self.stop(message)
-        self.start()
-    
     def fake_start(self, motd = None, message = None, force = False):
         if _screen_exists(self.screen_name):
             if force:

@@ -186,6 +186,9 @@ if opts.timeout:
 config.server_set(opts.server, server)
 server = Server(opts.server, server)
 
+if opts.restart:
+    opts.stop = opts.start = False
+
 if opts.archive:
     server.archive(opts.include, opts.exclude)
 
@@ -195,9 +198,8 @@ if opts.stop:
 if opts.fake_stop:
     server.fake_stop()
 
-if opts.upgrade:
-    server.upgrade(config, opts.force, opts.include,
-                   opts.exclude, opts.dryrun)
+if opts.upgrade and not opts.restart:
+    server.upgrade(config, opts.force, opts.include, opts.exclude, opts.dryrun)
 
 if opts.start:
     server.start(opts.force)
@@ -205,7 +207,13 @@ elif opts.fake_start:
     server.fake_start(opts.fake_motd, opts.fake_message, opts.force)
 
 if opts.restart:
-    server.restart(opts.message)
+    server.stop(opts.message)
+    
+    if opts.upgrade:
+        server.upgrade(config, opts.force, opts.include, opts.exclude,
+                       opts.dryrun)
+    
+    server.start(opts.force)
 
 if opts.command:
     server.command(opts.command)
