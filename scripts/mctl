@@ -165,10 +165,10 @@ package = None
 if opts.list:
     servers = config.servers_get()
     servers = servers.keys()
-    
+
     if len(servers) < 1:
         print "No servers found"
-    
+
     print "Server(s): %s" % (string.join(servers, ", "))
     exit()
 
@@ -208,11 +208,11 @@ elif opts.fake_start:
 
 if opts.restart:
     server.stop(opts.message)
-    
+
     if opts.upgrade:
         server.upgrade(config, opts.force, opts.include, opts.exclude,
                        opts.dryrun)
-    
+
     server.start(opts.force)
 
 if opts.command:

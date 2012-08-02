@@ -8,7 +8,7 @@ from distutils.util            import convert_path
 
 class mctl_install(install):
     description = "Custom Install Process"
-    
+
     user_options = install.user_options
     user_options.extend([
         ('install-man=',        None,
@@ -16,29 +16,29 @@ class mctl_install(install):
         ('install-completion=', None,
             'installation directory for completion scripts')
     ])
-    
+
     def initialize_options(self):
         install.initialize_options(self)
-        
+
         self.install_completion = None
         self.install_man        = None
-    
+
     def finalize_options(self):
         install.finalize_options(self)
-        
+
         if not isinstance(self.distribution.data_files, list):
             self.distribution.data_files = list()
-        
+
         if self.install_completion:
             self.distribution.data_files.append(
                 (self.install_completion,
                     ['scripts/completion/mctl',
                      'scripts/completion/mctl-fake'])
             )
-        
+
         if self.install_man:
             man1 = os.path.join(self.install_man, "man1")
-            
+
             self.distribution.data_files.append(
                 (man1, ['man/mctl.1', 'man/mctl-fake.1'])
             )

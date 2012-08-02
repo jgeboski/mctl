@@ -13,10 +13,10 @@ _mctl_fake()
             return 0
             ;;
     esac
-    
+
     local args="
         -h -k -s --addr --help --kill --message --motd --port --server"
-    
+
     COMPREPLY=( $( compgen -W '$args' -- "$cur" ) )
 } &&
 complete -F _mctl_fake mctl-fake

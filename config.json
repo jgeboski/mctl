@@ -4,7 +4,7 @@
             "path"   : "/absolute/path/to/server/root",
             "launch" : "java -server -Xincgc -Xmx1G -jar CraftBukkit.jar",
             "timeout": 60,
-            
+
             "packages": [
                 "AllowPlayers",  "CraftBukkit",       "CraftIRC",
                 "dynmap",        "Essentials",        "Essentials-extra",
@@ -15,7 +15,7 @@
                 "Transporter",   "VanishNoPacket",    "WorldEdit",
                 "WorldGuard"
             ],
-            
+
             "archives": {
                 "log": {
                     "path"        : "/absolute/path/to/server/root/logs",
@@ -23,7 +23,7 @@
                     "max-archives": 0,
                     "paths"       : ["server.log"]
                 },
-                
+
                 "backup": {
                     "path"        : "/absolute/path/to/server/root/backup",
                     "max-size"    : 0,
@@ -33,7 +33,7 @@
             }
         }
     },
-    
+
     "packages": {
         "AllowPlayers": {
             "path"   : "plugins",
@@ -42,7 +42,7 @@
             "updater": "bukkitdev",
             "extract": []
         },
-        
+
         "CraftBukkit": {
             "path"   : null,
             "type"   : "jar",
@@ -50,7 +50,7 @@
             "updater": "bukkitdl",
             "extract": []
         },
-        
+
         "CraftIRC": {
             "path"   : "plugins",
             "type"   : "jar",
@@ -58,7 +58,7 @@
             "updater": "jenkins",
             "extract": []
         },
-        
+
         "dynmap": {
             "path"   : "plugins",
             "type"   : "zip",
@@ -66,7 +66,7 @@
             "updater": "jenkins",
             "extract": ["dynmap.jar", "dynmap"]
         },
-        
+
         "Essentials": {
             "path"   : "plugins",
             "type"   : "zip",
@@ -76,7 +76,7 @@
                 "Essentials.jar", "EssentialsChat.jar", "EssentialsSpawn.jar"
             ]
         },
-        
+
         "Essentials-extra": {
             "path"   : "plugins",
             "type"   : "zip",
@@ -84,7 +84,7 @@
             "updater": "githubdl",
             "extract": ["EssentialsGeoIP.jar"]
         },
-        
+
         "Honeypot": {
             "path"   : "plugins",
             "type"   : "jar",
@@ -92,7 +92,7 @@
             "updater": "bukkitdev",
             "extract": []
         },
-        
+
         "LogBlock": {
             "path"   : "plugins",
             "type"   : "jar",
@@ -100,7 +100,7 @@
             "updater": "jenkins",
             "extract": []
         },
-        
+
         "LWC": {
             "path"   : "plugins",
             "type"   : "jar",
@@ -108,7 +108,7 @@
             "updater": "jenkins",
             "extract": []
         },
-        
+
         "mcMMO": {
             "path"   : "plugins",
             "type"   : "jar",
@@ -116,7 +116,7 @@
             "updater": "jenkins",
             "extract": []
         },
-        
+
         "Minequery": {
             "path"   : "plugins",
             "type"   : "zip",
@@ -124,7 +124,7 @@
             "updater": "bukkitdev",
             "extract": ["Minequery.jar"]
         },
-        
+
         "MobDisguise": {
             "path"   : "plugins",
             "type"   : "jar",
@@ -132,7 +132,7 @@
             "updater": "bukkitdev",
             "extract": []
         },
-        
+
         "NoCheat": {
             "path"   : "plugins",
             "type"   : "jar",
@@ -140,7 +140,7 @@
             "updater": "bukkitdev",
             "extract": []
         },
-        
+
         "PermissionsCompat": {
             "path"   : "plugins",
             "type"   : "jar",
@@ -148,7 +148,7 @@
             "updater": "jenkins",
             "extract": []
         },
-        
+
         "PermissionsEx": {
             "path"   : "plugins",
             "type"   : "jar",
@@ -156,7 +156,7 @@
             "updater": "jenkins",
             "extract": []
         },
-        
+
         "PhysicalShop": {
             "path"   : "plugins",
             "type"   : "jar",
@@ -164,7 +164,7 @@
             "updater": "bukkitdev",
             "extract": []
         },
-        
+
         "SpamHammer": {
             "path"   : "plugins",
             "type"   : "jar",
@@ -172,7 +172,7 @@
             "updater": "bukkitdev",
             "extract": []
         },
-        
+
         "Spout": {
             "path"   : "plugins",
             "type"   : "jar",
@@ -180,7 +180,7 @@
             "updater": "jenkins",
             "extract": []
         },
-        
+
         "Transporter": {
             "path"   : "plugins",
             "type"   : "jar",
@@ -188,7 +188,7 @@
             "updater": "bukkitdev",
             "extract": []
         },
-        
+
         "VanishNoPacket": {
             "path"   : "plugins",
             "type"   : "jar",
@@ -196,7 +196,7 @@
             "updater": "bukkitdev",
             "extract": []
         },
-        
+
         "WorldEdit": {
             "path"   : "plugins",
             "type"   : "jar",
@@ -204,7 +204,7 @@
             "updater": "jenkins",
             "extract": []
         },
-        
+
         "WorldGuard": {
             "path"   : "plugins",
             "type"   : "jar",
