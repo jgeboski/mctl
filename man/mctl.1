@@ -1,4 +1,4 @@
-.TH mctl 1 "March 03, 2012" mctl
+.TH mctl 1 "August 03, 2012" mctl
 .SH NAME
 mctl \- Minecraft server controller
 .SH SYNOPSIS
@@ -26,9 +26,6 @@ handles simple server management tasks such as starting, stopping, and
 restarting.  Additionally,
 .B mctl
 handles more advanced tasks such as archiving and the upgrading of packages.
-.B mctl
-also has the ability to run as a 'fake' server and act as a place holder when
-the main server needs to go offline.
 .SH OPTIONS
 .HP
 .BR \-g ", " \-\-config
@@ -81,12 +78,6 @@ Restart the specified server.
 .I COMMAND
 .br
 Run a command on the server.
-.TP
-.BR \-e ", " \-\-fake\-start
-Start the fake server for the specified server.
-.TP
-.BR \-k ", " \-\-fake\-stop
-Stop the fake server for the specified server.
 .SH ATTRIBUTES
 .HP
 .B \-\-include
@@ -117,28 +108,12 @@ Specify a message to be displayed when the server is stopped or restarted.
 .I TIMEOUT
 .br
 Specify a timeout, in seconds, for the server when stopping or restarting.
-.HP
-.B \-\-fake\-motd
-.I MOTD
-.br
-Specify a message of the day (MOTD) for the fake server.
-.HP
-.B \-\-fake\-message
-.I MESSAGE
-.br
-Specify a kick message for the fake server.
 .SH FILES
 .TP
 .I ~/.mctl/config.json
 The main configuration file for
 .BR mctl .
 .SH EXAMPLES
-.HP
-.B mctl \-s example \-\-stop \-\-fake\-start
-.B \-\-timeout=30 \-message="Stopping server..."
-.B \-\-fake\-message="Server is undergoing maintenance, try back later"
-.br
-Stop the server after 30 seconds and start the fake server with messages.
 .HP
 .B mctl \-s example \-\-restart \-\-timeout=30
 .B \-\-message="Restarting server..."

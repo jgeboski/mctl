@@ -3,6 +3,7 @@ import os
 import re
 import shlex
 import socket
+import string
 import struct
 import sys
 import time
@@ -86,6 +87,8 @@ class FakeServer(dispatcher):
         motd    = motd    if motd    else "Server Offline"
         message = message if message else "The server is currently offline"
 
+        port = int(port)
+
         self.__ping = "\xFF%s%s%s" % (
             struct.pack(">h", (len(motd) + 4)),
             motd.encode("UTF-16BE"),
@@ -125,8 +128,36 @@ class FakeServer(dispatcher):
         self.close()
 
     @staticmethod
+    def fork(server, addr = None, port = None, motd = None, message = None):
+        if not server:
+            return
+
+        args = list()
+
+        args.append("--foreground")
+        args.append("--server=%s" % (server))
+
+        if addr:
+            args.append("--addr=%s" % (addr))
+
+        if port:
+            args.append("--port=%s" % (port))
+
+        if motd:
+            args.append("--motd='%s'" % (motd))
+
+        if message:
+            args.append("--message='%s'" % (message))
+
+        name = "fake-%s" % (server)
+        cmd  = "%s %s" % (sys.argv[0], string.join(args))
+
+        log.info("%s: fake server starting...", server)
+        _screen_new(name, cmd)
+
+    @staticmethod
     def pidfile(server):
-        path = os.path.join("~", ".mctl", "run", "%s-fake.pid" % (server))
+        path = os.path.join("~", ".mctl", "run", "fake-%s.pid" % (server))
         path = os.path.expanduser(path)
 
         return path
@@ -162,6 +193,8 @@ class FakeServer(dispatcher):
 
     @staticmethod
     def kill(server):
+        log.info("%s: fake server stopping...", server)
+        
         pidfile = FakeServer.pidfile(server)
         fp      = fopen(pidfile, "r")
 
@@ -186,22 +219,6 @@ class FakeServer(dispatcher):
             return False
 
         return True
-
-def PFakeServer(server, addr = None, port = 25565, motd = None, message = None):
-    if not server:
-        return
-
-    addr    = addr      if addr    else "0.0.0.0"
-    port    = int(port) if port    else 25565
-    motd    = motd      if motd    else "Server Offline"
-    message = message   if message else "The server is currently offline"
-
-    name = "mctl-fake-%s" % (server)
-    cmd  = "%s --server=%s --addr=%s --port=%d --motd='%s' --message='%s'" % (
-        "mctl-fake", server, addr, port, motd, message
-    )
-
-    _screen_new(name, cmd)
 
 class Server:
     def __init__(self, name, server):
@@ -286,14 +303,6 @@ class Server:
     def start(self, force = False):
         cwd = os.getcwd()
 
-        if FakeServer.running(self.server):
-            if force:
-                self.stop_fake()
-            else:
-                log.error("%s: failed to start: fake server is running",
-                    self.server)
-                return
-
         if _screen_exists(self.screen_name):
             log.error("%s: failed to start: server is running", self.server)
             return
@@ -333,53 +342,3 @@ class Server:
         self.command("stop")
 
         _screen_join(self.screen_name)
-
-    def fake_start(self, motd = None, message = None, force = False):
-        if _screen_exists(self.screen_name):
-            if force:
-                self.stop(message)
-            else:
-                log.error("%s: failed to start fake: server is running",
-                    self.server)
-                return
-
-        if FakeServer.running(self.server):
-            log.error("%s: failed to start fake: fake server is running",
-                self.server)
-            return
-
-        path = os.path.join(self.path, "server.properties")
-        fp   = fopen(path, "r")
-
-        if not fp:
-            return
-
-        data = fp.read()
-        fp.close()
-
-        match = re.search("^server-ip=(.*)$", data, re.MULTILINE)
-
-        if not match:
-            log.warning("Failed to get `server-ip' from: %s", path)
-            return
-
-        addr  = match.group(1)
-        match = re.search("^server-port=(\d+)$", data, re.MULTILINE)
-
-        if not match:
-            log.warning("Failed to get `server-port' from: %s", path)
-            return
-
-        port = match.group(1)
-
-        log.info("%s: fake server starting...", self.server)
-        PFakeServer(self.server, addr, port, motd, message)
-
-    def fake_stop(self):
-        if not FakeServer.running(self.server):
-            log.error("%s: failed to stop fake: fake server is not running",
-                self.server)
-            return
-
-        log.info("%s: fake server stopping...", self.server)
-        FakeServer.kill(self.server)

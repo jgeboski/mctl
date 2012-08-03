@@ -9,7 +9,7 @@ import sys
 sys.path.append("../")
 
 from mctl.config import Config
-from mctl.server import FakeServer, Server
+from mctl.server import Server
 
 parser = optparse.OptionParser(
     usage       = "usage: %prog [OPTIONS]",
@@ -89,18 +89,6 @@ acts.add_option(
     metavar = "COMMAND",
     help    = "run a command on the server"
 )
-acts.add_option(
-    "-e", "--fake-start",
-    action  = "store_true",
-    dest    = "fake_start",
-    help    = "start the fake sever"
-)
-acts.add_option(
-    "-k", "--fake-stop",
-    action  = "store_true",
-    dest    = "fake_stop",
-    help    = "stop the fake sever"
-)
 
 attrs.add_option(
     "--include",
@@ -129,20 +117,6 @@ attrs.add_option(
     dest    = "timeout",
     metavar = "TIMEOUT",
     help    = "server shutdown timeout in seconds"
-)
-attrs.add_option(
-    "--fake-motd",
-    action  = "store",
-    dest    = "fake_motd",
-    metavar = "MOTD",
-    help    = "MOTD for fake server"
-)
-attrs.add_option(
-    "--fake-message",
-    action  = "store",
-    dest    = "fake_message",
-    metavar = "MESSAGE",
-    help    = "kick message for fake server"
 )
 
 parser.add_option_group(acts)
@@ -187,7 +161,7 @@ config.server_set(opts.server, server)
 server = Server(opts.server, server)
 
 if opts.restart:
-    opts.stop = opts.start = False
+    opts.stop = opts.start = True
 
 if opts.archive:
     server.archive(opts.include, opts.exclude)
@@ -195,24 +169,10 @@ if opts.archive:
 if opts.stop:
     server.stop(opts.message)
 
-if opts.fake_stop:
-    server.fake_stop()
-
-if opts.upgrade and not opts.restart:
+if opts.upgrade:
     server.upgrade(config, opts.force, opts.include, opts.exclude, opts.dryrun)
 
 if opts.start:
-    server.start(opts.force)
-elif opts.fake_start:
-    server.fake_start(opts.fake_motd, opts.fake_message, opts.force)
-
-if opts.restart:
-    server.stop(opts.message)
-
-    if opts.upgrade:
-        server.upgrade(config, opts.force, opts.include, opts.exclude,
-                       opts.dryrun)
-
     server.start(opts.force)
 
 if opts.command:
