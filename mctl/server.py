@@ -67,14 +67,27 @@ class _FakeChannel(dispatcher):
             self.send(str())
             return
 
+        #for i in range(len(data)):
+        #    print "0x%02x = %s" % (ord(data[i]), data[i])
+
         addr, port = self.addr
+        ver        = ord(data[1])
 
-        # For 1.2 - 1.3 compatibility
-        data = data[4:].replace("\t", ";")
-        data = data.split(";")[0]
+        if ver == 39:
+            l, = struct.unpack(">h", data[2:4])
+            l  = (l * 2) + 4
 
-        log.info("%s [%s:%d] attempted to join", data, addr, port)
+            user   = data[4:l].decode("UTF-16BE")
+            client = "1.3.1"
+        else:
+            l = ord(data[2])
+            l = (l * 2) + 3
 
+            user   = data[3:l].decode("UTF-16BE")
+            user   = user.split(";")[0]
+            client = "pre 1.3"
+
+        log.info("%s [%s:%d]: client version: %s", user, addr, port, client)
         self.send(self.__kick)
 
     def handle_close(self):
@@ -194,7 +207,7 @@ class FakeServer(dispatcher):
     @staticmethod
     def kill(server):
         log.info("%s: fake server stopping...", server)
-        
+
         pidfile = FakeServer.pidfile(server)
         fp      = fopen(pidfile, "r")
 
