@@ -1,13 +1,45 @@
 import logging
 import os
+import re
+import shlex
 import sys
 import urllib2
 import urlparse
 
-from math import floor
+from math       import floor
+from subprocess import Popen, PIPE
 
 TIMEOUT_HTTP = 5
 log          = logging.getLogger("mctl")
+
+def execute_command(command, quiet = True):
+    args = shlex.split(str(command))
+
+    if quiet:
+        p = Popen(args, 0, None, PIPE, PIPE, PIPE)
+    else:
+        p = Popen(args)
+
+    p.wait()
+    return p.stdout.read() if quiet else None
+
+def screen_exists(name):
+    ret   = execute_command("screen -ls")
+    match = re.search("^.*\d+\.%s.*$" % (name), ret, re.MULTILINE)
+
+    if match:
+        return True
+
+    return False
+
+def screen_new(name, command):
+    execute_command("screen -S %s -dm %s" % (name, command))
+
+def screen_join(name):
+    execute_command("screen -S %s -x" % (name), False)
+
+def screen_command_send(name, command):
+    execute_command("screen -S %s -p 0 -X stuff '%s\n'" % (name, command))
 
 def mkdir(path):
     if os.path.isdir(path):

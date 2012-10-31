@@ -10,9 +10,8 @@ import sys
 # Temporarily set the path for testing
 sys.path.append("../")
 
-from mctl.server import FakeServer
-from mctl.util   import fopen, unlink
-from signal      import signal, SIGINT, SIGQUIT, SIGTERM
+from mctl.fakeserver import FakeServer
+from signal          import signal, SIGINT
 
 parser = optparse.OptionParser(
     usage       = "usage: %prog [OPTIONS]",
@@ -110,7 +109,7 @@ def handler(signum, frame):
 
 signal(SIGINT,  handler)
 
-fp = fopen(pidfile, "w", True)
+fp = util.fopen(pidfile, "w", True)
 
 if not fp:
     exit(1)
@@ -124,4 +123,4 @@ while run:
     asyncore.loop(10, False, None, 1)
 
 server.close()
-unlink(pidfile)
+util.unlink(pidfile)
