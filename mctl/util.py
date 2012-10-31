@@ -6,7 +6,8 @@ import urlparse
 
 from math import floor
 
-log = logging.getLogger("mctl")
+TIMEOUT_HTTP = 5
+log          = logging.getLogger("mctl")
 
 def mkdir(path):
     if os.path.isdir(path):
@@ -49,7 +50,7 @@ def download(url, path):
         return False
 
     try:
-        ul = urllib2.urlopen(url)
+        ul = urllib2.urlopen(url, None, TIMEOUT_HTTP)
     except urllib2.URLError, msg:
         log.error("Failed to download: %s: %s", url, msg)
         return False
@@ -107,7 +108,7 @@ def url_get(url):
 
     try:
         rq = urllib2.Request(url, None, headers)
-        ul = urllib2.urlopen(rq)
+        ul = urllib2.urlopen(rq,  None, TIMEOUT_HTTP)
     except urllib2.URLError, msg:
         log.error("Failed to open: %s: %s", url, msg)
         return None
