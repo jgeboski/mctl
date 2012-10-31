@@ -2,18 +2,15 @@
     "servers": {
         "example": {
             "path"   : "/absolute/path/to/server/root",
-            "launch" : "java -server -Xincgc -Xmx1G -jar CraftBukkit.jar",
+            "launch" : "java -Xmx1G -server -jar CraftBukkit.jar",
             "timeout": 60,
 
             "packages": [
-                "AllowPlayers",  "CraftBukkit",       "CraftIRC",
-                "dynmap",        "Essentials",        "Essentials-extra",
-                "Honeypot",      "LogBlock",          "LWC",
-                "mcMMO",         "Minequery",         "MobDisguise",
-                "NoCheat",       "PermissionsCompat", "PermissionsEx",
-                "PhysicalShop",  "SpamHammer",        "Spout",
-                "Transporter",   "VanishNoPacket",    "WorldEdit",
-                "WorldGuard"
+                "AllowPlayers",   "CraftBukkit",      "dynmap",
+                "Essentials",     "Essentials-extra", "LWC",
+                "PermissionsEx",  "Spout",            "Transporter",
+                "VanishNoPacket", "WorldEdit",        "WorldGuard"
+                
             ],
 
             "archives": {
@@ -27,7 +24,7 @@
                 "backup": {
                     "path"        : "/absolute/path/to/server/root/backup",
                     "max-size"    : 0,
-                    "max-archives": 30,
+                    "max-archives": 20,
                     "paths"       : ["plugins", "world", "world_nether"]
                 }
             }
@@ -48,14 +45,6 @@
             "type"   : "jar",
             "url"    : "http://dl.bukkit.org/downloads/craftbukkit/list/dev/",
             "updater": "bukkitdl",
-            "extract": []
-        },
-
-        "CraftIRC": {
-            "path"   : "plugins",
-            "type"   : "jar",
-            "url"    : "http://ensifera.com:8080/job/CraftIRC%203/",
-            "updater": "jenkins",
             "extract": []
         },
 
@@ -85,66 +74,10 @@
             "extract": ["EssentialsGeoIP.jar"]
         },
 
-        "Honeypot": {
-            "path"   : "plugins",
-            "type"   : "jar",
-            "url"    : "http://dev.bukkit.org/server-mods/honeypot/",
-            "updater": "bukkitdev",
-            "extract": []
-        },
-
-        "LogBlock": {
-            "path"   : "plugins",
-            "type"   : "jar",
-            "url"    : "http://diddiz.insane-architects.net:8080/job/LogBlock/",
-            "updater": "jenkins",
-            "extract": []
-        },
-
         "LWC": {
             "path"   : "plugins",
             "type"   : "jar",
             "url"    : "http://ci.griefcraft.com/job/LWC/",
-            "updater": "jenkins",
-            "extract": []
-        },
-
-        "mcMMO": {
-            "path"   : "plugins",
-            "type"   : "jar",
-            "url"    : "http://ci.mcmmo.org/job/mcMMO/",
-            "updater": "jenkins",
-            "extract": []
-        },
-
-        "Minequery": {
-            "path"   : "plugins",
-            "type"   : "zip",
-            "url"    : "http://dev.bukkit.org/server-mods/minequery/",
-            "updater": "bukkitdev",
-            "extract": ["Minequery.jar"]
-        },
-
-        "MobDisguise": {
-            "path"   : "plugins",
-            "type"   : "jar",
-            "url"    : "http://dev.bukkit.org/server-mods/mobdisguise/",
-            "updater": "bukkitdev",
-            "extract": []
-        },
-
-        "NoCheat": {
-            "path"   : "plugins",
-            "type"   : "jar",
-            "url"    : "http://dev.bukkit.org/server-mods/nocheat/",
-            "updater": "bukkitdev",
-            "extract": []
-        },
-
-        "PermissionsCompat": {
-            "path"   : "plugins",
-            "type"   : "jar",
-            "url"    : "http://webbukkit.org:8080/job/PermissionsCompat/",
             "updater": "jenkins",
             "extract": []
         },
@@ -154,22 +87,6 @@
             "type"   : "jar",
             "url"    : "http://webbukkit.org:8080/job/PermissionsEx/",
             "updater": "jenkins",
-            "extract": []
-        },
-
-        "PhysicalShop": {
-            "path"   : "plugins",
-            "type"   : "jar",
-            "url"    : "http://dev.bukkit.org/server-mods/physicalshop/",
-            "updater": "bukkitdev",
-            "extract": []
-        },
-
-        "SpamHammer": {
-            "path"   : "plugins",
-            "type"   : "jar",
-            "url"    : "http://dev.bukkit.org/server-mods/spamhammer/",
-            "updater": "bukkitdev",
             "extract": []
         },
 
