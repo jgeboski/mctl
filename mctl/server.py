@@ -53,6 +53,11 @@ class _FakeChannel(dispatcher):
         self.__ping = ping
         self.__kick = kick
 
+        self.__clients = {
+            39: "1.3.2",
+            47: "1.4.2"
+        }
+
     def handle_read(self):
         data = self.recv(256)
 
@@ -67,18 +72,15 @@ class _FakeChannel(dispatcher):
             self.send(str())
             return
 
-        #for i in range(len(data)):
-        #    print "0x%02x = %s" % (ord(data[i]), data[i])
-
         addr, port = self.addr
         ver        = ord(data[1])
 
-        if ver == 39:
+        if ver in self.__clients:
             l, = struct.unpack(">h", data[2:4])
             l  = (l * 2) + 4
 
             user   = data[4:l].decode("UTF-16BE")
-            client = "1.3.1"
+            client = self.__clients[ver]
         else:
             l = ord(data[2])
             l = (l * 2) + 3
@@ -100,18 +102,31 @@ class FakeServer(dispatcher):
         motd    = motd    if motd    else "Server Offline"
         message = message if message else "The server is currently offline"
 
+        pver = "47"
+        mver = "1.4.2"
+
         port = int(port)
+        zero = str(0).encode("UTF-16BE")
+        mlen = len(pver) + len(mver) + len(motd) + (len(zero) * 2) + 5
 
-        self.__ping = "\xFF%s%s%s" % (
-            struct.pack(">h", (len(motd) + 4)),
-            motd.encode("UTF-16BE"),
-            "\x00\xA7\x00\x30\x00\xA7\x00\x30",
-        )
+        self.__ping = string.join((
+            "\xFF",
+            struct.pack(">h", mlen),
+            "\x00\xA7\x00\x31",
+            "\x00\x00", pver.encode("UTF-16BE"),
+            "\x00\x00", mver.encode("UTF-16BE"),
+            "\x00\x00", motd.encode("UTF-16BE"),
+            "\x00\x00", zero,
+            "\x00\x00", zero
+        ), '')
 
-        self.__kick = "\xFF%s%s" % (
-            struct.pack(">h", len(message)),
+        mlen = len(message)
+
+        self.__kick = string.join((
+            "\xFF",
+            struct.pack(">h", mlen),
             message.encode("UTF-16BE")
-        )
+        ), '')
 
         dispatcher.__init__(self)
         self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
