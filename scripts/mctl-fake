@@ -11,6 +11,7 @@ import sys
 sys.path.append("../")
 
 from mctl.fakeserver import FakeServer
+from mctl.util       import fopen, unlink
 from signal          import signal, SIGINT
 
 parser = optparse.OptionParser(
@@ -109,7 +110,7 @@ def handler(signum, frame):
 
 signal(SIGINT,  handler)
 
-fp = util.fopen(pidfile, "w", True)
+fp = fopen(pidfile, "w", True)
 
 if not fp:
     exit(1)
@@ -123,4 +124,4 @@ while run:
     asyncore.loop(10, False, None, 1)
 
 server.close()
-util.unlink(pidfile)
+unlink(pidfile)
