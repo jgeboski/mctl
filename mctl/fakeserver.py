@@ -11,12 +11,13 @@ from signal   import SIGINT
 
 log = logging.getLogger("mctl")
 
-MC_PVER = "47"
-MC_SVER = "1.4.2"
+MC_PVER = "49"
+MC_SVER = "1.4.4"
 
 _clients = {
     39: "1.3.2",
-    47: "1.4.2"
+    47: "1.4.2",
+    49: "1.4.4"
 }
 
 class _FakeChannel(dispatcher):
@@ -69,9 +70,6 @@ class FakeServer(dispatcher):
         port    = port    if port    else 25565
         motd    = motd    if motd    else "Server Offline"
         message = message if message else "The server is currently offline"
-
-        pver = "47"
-        mver = "1.4.2"
 
         port = int(port)
         zero = str(0).encode("UTF-16BE")
