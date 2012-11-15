@@ -8,15 +8,16 @@ _mctl_fake()
 
     case $prev in
         -s|--server)
-            local args=$( mctl "$1" --list | cut -c12- | sed 's/,//g' )
-            COMPREPLY=( $( compgen -W '$args' -- "$cur" ) )
+            local args=$(mctl "$1" --list | cut -c12- | sed 's/,//g')
+            COMPREPLY=($(compgen -W '$args' -- "$cur"))
             return 0
             ;;
     esac
 
     local args="
-        -h -k -s --addr --help --kill --message --motd --port --server"
+        -f -h -k -s
+        --addr --foreground --help --kill --message --motd --port --server"
 
-    COMPREPLY=( $( compgen -W '$args' -- "$cur" ) )
+    COMPREPLY=($(compgen -W '$args' -- "$cur"))
 } &&
 complete -F _mctl_fake mctl-fake
