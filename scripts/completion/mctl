@@ -15,10 +15,9 @@ _mctl()
     esac
 
     local args="
-        -a -c -d -f -g -h -i -l -q -r -s -u
-        --archive --command --config --dry-run --exclude --force --help
-        --include --list --message --restart --server --start --stop
-        --timeout --upgrade"
+        -c -d -f -g -h -i -l -q -r -s -u
+        --command --config --dry-run --exclude --force --help --include --list
+        --message --restart --server --start --stop --timeout --upgrade"
 
     COMPREPLY=($(compgen -W '$args' -- "$cur"))
 } &&

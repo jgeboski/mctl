@@ -25,7 +25,7 @@ is a Minecraft server controller script.
 handles simple server management tasks such as starting, stopping, and
 restarting.  Additionally,
 .B mctl
-handles more advanced tasks such as archiving and the upgrading of packages.
+handles more advanced tasks such as the upgrading of packages.
 .SH OPTIONS
 .HP
 .BR \-g ", " \-\-config
@@ -50,13 +50,6 @@ Show a help message and exit.
 .BR \-l, ", " \-\-list
 Show a list of servers in the configuration.
 .SH ACTIONS
-.TP
-.BR \-a ", " \-\-archive
-Archive all of the archives configured.
-.B \-\-include
-can be used to archive only specific archives.
-.B \-\-exclude
-can be used to archive all archives but the excluded archives.
 .TP
 .BR \-u ", " \-\-upgrade
 Upgrade all of the packages configured.
@@ -83,21 +76,15 @@ Run a command on the server.
 .B \-\-include
 .I LIST
 .br
-Specify archive(s) or package(s) to include when
-.B \-\-archive 
-or
-.B \-\-upgrade
-are used.  This will override any packages and only apply operation to
-the package(s) specified.
+Specify package(s) to include with
+.B \-\-upgrade.
+Operations will only be applied to the specified package(s).
 .HP
 .B \-\-exclude
 .I LIST
 .br
-Specify archive(s) or package(s) to exclude when
-.B \-\-archive 
-or
-.B \-\-upgrade
-are used.
+Specify package(s) to exclude with
+.B \-\-upgrade.
 .HP
 .B \-\-message
 .I MESSAGE
@@ -121,15 +108,10 @@ The main configuration file for
 Restart the server after 30 seconds and display the message:
 Restarting server...
 .TP
-.B mctl \-s example \-\-archive \-\-include=backup
-Run the archiver on the backup archive
-.TP
 .B mctl \-s example \-\-upgrade \-\-include=CraftBukkit,dynamp
 Upgrade only the CraftBukkit and dynmap packages
 .TP
 .B mctl \-s example \-\-upgrade \-\-exclude=Spout
 Upgrade all packages but Spout
-.TP
-.B 
 .SH "SEE ALSO"
 mctl\-fake(1)

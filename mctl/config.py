@@ -142,10 +142,9 @@ class Config:
 
     def archive_new(self):
         archive = {
-            'path'        : None,
-            'max-size'    : 0,
-            'max-archives': 0,
-            'paths'       : list()
+            'path': None,
+            'size': 0,
+            'file': None
         }
 
         return archive
@@ -155,7 +154,7 @@ class Config:
             'path'    : None,
             'launch'  : None,
             'timeout' : 0,
-            'archives': dict(),
+            'archives': list(),
             'packages': list()
         }
 
@@ -180,9 +179,9 @@ class Config:
         srv = self.__config['servers'][server]
         srv = _merge_dicts(self.server_new(), srv)
 
-        for archive in srv['archives']:
-            srv['archives'][archive] = _merge_dicts(self.archive_new(),
-                                                    srv['archives'][archive])
+        for i in range(len(srv['archives'])):
+            srv['archives'][i] = _merge_dicts(self.archive_new(),
+                                              srv['archives'][i])
 
         return srv
 
@@ -195,9 +194,9 @@ class Config:
 
         srv = _merge_dicts(self.server_new(), server)
 
-        for archive in srv['archives']:
-            srv['archives'][archive] = _merge_dicts(self.archive_new(),
-                                                    srv['archives'][archive])
+        for i in range(len(srv['archives'])):
+            srv['archives'][i] = _merge_dicts(self.archive_new(),
+                                              srv['archives'][i])
 
         self.__config['servers'][name] = srv
 

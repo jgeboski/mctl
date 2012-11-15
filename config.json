@@ -13,21 +13,13 @@
                 
             ],
 
-            "archives": {
-                "log": {
-                    "path"        : "/absolute/path/to/server/root/logs",
-                    "max-size"    : 20,
-                    "max-archives": 0,
-                    "paths"       : ["server.log"]
-                },
-
-                "backup": {
-                    "path"        : "/absolute/path/to/server/root/backup",
-                    "max-size"    : 0,
-                    "max-archives": 20,
-                    "paths"       : ["plugins", "world", "world_nether"]
+            "archives": [
+                {
+                    "path": "/absolute/path/to/server/root/logs",
+                    "size": 20,
+                    "file": "server.log"
                 }
-            }
+            ]
         }
     },
 

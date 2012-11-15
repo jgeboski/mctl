@@ -3,8 +3,7 @@ import os
 import time
 import util
 
-from archive  import Archive
-from package  import Package
+from package import Package
 
 log = logging.getLogger("mctl")
 
@@ -19,33 +18,28 @@ class Server:
 
         self.screen_name = "mctl-%s" % (name)
 
+    def _archive(self):
+        for archive in self.archives:
+            path = os.path.join(self.path, archive['file'])
+
+            try:
+                size = os.path.getsize(path)
+            except:
+                continue
+
+            if size < (archive['size'] * (1024 ** 2)):
+                continue
+
+            apath = os.path.basename(path)
+            apath = "%s.%d.bz2" % (apath, time.time())
+            apath = os.path.join(archive['path'], apath)
+
+            util.mkdir(archive['path'])
+            util.compress_file_bz2(path, apath)
+            util.unlink(path)
+
     def command(self, command):
         util.screen_command_send(self.screen_name, command)
-
-    def archive(self, archives = None, exclude = None):
-        if archives:
-            if isinstance(archives, str):
-                archives = archives.split(",")
-            elif not isinstance(archives, list):
-                archives = self.archives.keys()
-        else:
-            archives = self.archives.keys()
-
-        if exclude:
-            if isinstance(exclude, str):
-                exclude = exclude.split(",")
-            elif not isinstance(exclude, list):
-                exclude = list()
-
-            for e in exclude:
-                try:
-                    archives.remove(e)
-                except ValueError:
-                    pass
-
-        for archive in archives:
-            archive = Archive(archive, self.archives[archive], self.path)
-            archive.all()
 
     def upgrade(self, config, force = False, packages = None,
                 exclude = None, dryrun = False):
@@ -95,10 +89,7 @@ class Server:
             log.error("%s: failed to start: server is running", self.server)
             return
 
-        for archive in self.archives:
-            archive = Archive(archive, self.archives[archive], self.path)
-            archive.oversized()
-
+        self._archive()
         log.info("%s: server starting...", self.server)
 
         os.chdir(self.path)

@@ -53,12 +53,6 @@ parser.add_option(
 )
 
 acts.add_option(
-    "-a", "--archive",
-    action  = "store_true",
-    dest    = "archive",
-    help    = "archive the server archive paths"
-)
-acts.add_option(
     "-u", "--upgrade",
     action  = "store_true",
     dest    = "upgrade",
@@ -95,14 +89,14 @@ attrs.add_option(
     action  = "store",
     dest    = "include",
     metavar = "LIST",
-    help    = "list archives or packages to include"
+    help    = "list packages to include"
 )
 attrs.add_option(
     "--exclude",
     action  = "store",
     dest    = "exclude",
     metavar = "LIST",
-    help    = "list archives or packages to exclude"
+    help    = "list packages to exclude"
 )
 attrs.add_option(
     "--message",
@@ -162,9 +156,6 @@ server = Server(opts.server, server)
 
 if opts.restart:
     opts.stop = opts.start = True
-
-if opts.archive:
-    server.archive(opts.include, opts.exclude)
 
 if opts.stop:
     server.stop(opts.message)
