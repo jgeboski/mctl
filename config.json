@@ -16,7 +16,7 @@
             "archives": [
                 {
                     "path": "/absolute/path/to/server/root/logs",
-                    "size": 20,
+                    "size": 20000,
                     "file": "server.log"
                 }
             ]

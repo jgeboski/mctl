@@ -27,7 +27,7 @@ class Server:
             except:
                 continue
 
-            if size < (archive['size'] * (1024 ** 2)):
+            if size < (archive['size'] * 1024):
                 continue
 
             apath = os.path.basename(path)
