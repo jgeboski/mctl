@@ -11,13 +11,14 @@ from signal   import SIGINT
 
 log = logging.getLogger("mctl")
 
-MC_PVER = "49"
-MC_SVER = "1.4.4"
+MC_PVER = "51"
+MC_SVER = "1.4.6"
 
 _clients = {
     39: "1.3.2",
     47: "1.4.2",
-    49: "1.4.4"
+    49: "1.4.4",
+    51: "1.4.6"
 }
 
 class _FakeChannel(dispatcher):
@@ -44,6 +45,8 @@ class _FakeChannel(dispatcher):
         addr, port = self.addr
         ver        = ord(data[1])
 
+        #print "Version: %s" % (ver)
+
         if ver in _clients:
             l, = struct.unpack(">h", data[2:4])
             l  = (l * 2) + 4
@@ -51,14 +54,10 @@ class _FakeChannel(dispatcher):
             user   = data[4:l].decode("UTF-16BE")
             client = _clients[ver]
         else:
-            l = ord(data[2])
-            l = (l * 2) + 3
+            user   = "Unknown"
+            client = "Unknown"
 
-            user   = data[3:l].decode("UTF-16BE")
-            user   = user.split(";")[0]
-            client = "pre 1.3"
-
-        log.info("%s [%s:%d]: client version: %s", user, addr, port, client)
+        log.info("%s[%s:%d] connected (MC: %s)", user, addr, port, client)
         self.send(self.__kick)
 
     def handle_close(self):
