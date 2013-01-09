@@ -64,8 +64,7 @@ class Package:
         if not self.dryrun and not download(urlh, out):
             return version
 
-        log.info("%s: package upgraded: %s -> %s",
-                 self.package, version, uver)
+        log.info("%s: package upgraded: %s -> %s", self.package, version, uver)
 
         if self.dryrun or (self.type != "zip"):
             return uver
@@ -124,8 +123,8 @@ class Package:
         if match:
             version = match.group(1)
         else:
-            log.warning("%s: version extraction failed: reported version `%s'",
-                        self.package, version)
+            log.warning("Failed to extract version: reported version `%s'",
+                        version)
 
             version = None
 
@@ -148,9 +147,8 @@ class Package:
             ".*dl.bukkit.org/downloads/(\w+)(?:/(?:list)/(\w+))?/?", self.url)
 
         if not match or not match.group(1):
-            log.error("%s: URL parsing failed: invalid bukkitdl URL",
-                self.package)
-            return
+            log.error("Failed to parse URL: %s: invalid bukkitdl URL", self.url)
+            return (None, None)
 
         urlh = "http://dl.bukkit.org/api/1.0/downloads/" \
                "projects/%s/artifacts/" % (match.group(1))
@@ -242,9 +240,8 @@ class Package:
             match = re.search("\"(artifact/%s)\"" % (fr), data, re.I)
 
             if not match:
-                log.warning("%s: failed to get download URL: (version: %s) "
-                            "reverting to previous version",
-                            self.package, version)
+                log.warning("Failed to extract download URL: (version: %s) "
+                            "reverting to previous version", version)
                 continue
 
             urlr  = url_join(urlh, match.group(1))
