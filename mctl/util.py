@@ -48,7 +48,7 @@ def mkdir(path):
 
     try:
         os.makedirs(path)
-    except OSError, msg:
+    except Exception, msg:
         log.error("Failed to make directory: %s: %s", path, msg)
         return False
 
@@ -63,7 +63,7 @@ def fopen(path, mode = "r", create_path = False):
 
     try:
         fp = open(path, mode)
-    except IOError, msg:
+    except Exception, msg:
         log.error("Failed to open: %s: %s", path, msg)
         fp = None
 
@@ -72,7 +72,7 @@ def fopen(path, mode = "r", create_path = False):
 def unlink(path):
     try:
         os.remove(path)
-    except OSError, msg:
+    except Exception, msg:
         log.error("Failed to remove: %s: %s", archive, msg)
         return False
 
@@ -86,8 +86,8 @@ def compress_file_bz2(path, apath):
 
         try:
             bzf = BZ2File(apath, "w")
-        except:
-            log.error("Failed to open: %s", apath)
+        except Exception, msg:
+            log.error("Failed to open: %s: %s", apath, msg)
             return False
 
         size = os.path.getsize(path)
@@ -128,7 +128,7 @@ def download(url, path):
 
     try:
         ul = urllib2.urlopen(url, None, TIMEOUT_HTTP)
-    except urllib2.URLError, msg:
+    except Exception, msg:
         log.error("Failed to download: %s: %s", url, msg)
         return False
 
@@ -186,7 +186,7 @@ def url_get(url):
     try:
         rq = urllib2.Request(url, None, headers)
         ul = urllib2.urlopen(rq,  None, TIMEOUT_HTTP)
-    except urllib2.URLError, msg:
+    except Exception, msg:
         log.error("Failed to open: %s: %s", url, msg)
         return None
 

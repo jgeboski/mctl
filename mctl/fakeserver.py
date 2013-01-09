@@ -99,7 +99,7 @@ class FakeServer(dispatcher):
         try:
             self.bind((addr, port))
             self.listen(5)
-        except socket.error, msg:
+        except Exception, msg:
             self.close()
 
             log.critical("Failed to listen on %s:%d: %s", addr, port, msg)
@@ -179,7 +179,7 @@ class FakeServer(dispatcher):
 
         try:
             os.kill(pid, 0)
-        except OSError, msg:
+        except:
             return False
 
         return True
@@ -207,7 +207,7 @@ class FakeServer(dispatcher):
 
         try:
             os.kill(pid, SIGINT)
-        except OSError, msg:
+        except Exception, msg:
             log.error("Failed to kill process (%d): %s", pid, msg)
             return False
 

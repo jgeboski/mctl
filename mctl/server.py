@@ -60,7 +60,7 @@ class Server:
             for e in exclude:
                 try:
                     packages.remove(e)
-                except ValueError:
+                except:
                     pass
 
         for package in packages:
