@@ -190,7 +190,11 @@ class Package:
         if not data:
             return (None, None)
 
-        dom  = minidom.parseString(data)
+        try:
+            dom = minidom.parseString(data)
+        except Exception, msg:
+            log.error("Failed to parse XML: %s: %s", urlh, msg)
+            return (None, None)
 
         for entry in dom.getElementsByTagName("entry"):
             title = _xml_child_get(entry, "title")
