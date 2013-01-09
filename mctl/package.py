@@ -197,7 +197,7 @@ class Package:
         for entry in dom.getElementsByTagName("entry"):
             title = _xml_child_get(entry, "title")
             title = title.firstChild.nodeValue
-            match = re.match(".* #(\d+).* \((.*)\)", title)
+            match = re.match(".* #([A-Za-z0-9_-]+) \((.*)\)", title)
 
             if not match:
                 continue
