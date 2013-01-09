@@ -1,15 +1,18 @@
 #!/usr/bin/env python
 
-import optparse
 import logging
+import optparse
+import os
 import string
 import sys
+import time
 
 # Temporarily set the path for testing
 sys.path.append("../")
 
 from mctl.config import Config
 from mctl.server import Server
+from mctl.util   import fopen
 
 parser = optparse.OptionParser(
     usage       = "usage: %prog [OPTIONS]",
@@ -154,6 +157,23 @@ if opts.timeout:
 config.server_set(opts.server, server)
 server = Server(opts.server, server)
 
+if opts.dryrun:
+    if opts.upgrade:
+        server.upgrade(config, opts.force, opts.include, opts.exclude, True)
+    exit()
+
+lfh = os.path.join(server.path, "mctl.log")
+lfh = logging.FileHandler(lfh)
+fmt = logging.Formatter("%(asctime)s [%(levelname)s] %(message)s",
+                        "%y-%m-%d %H:%M:%S")
+
+lfh.setFormatter(fmt)
+log.addHandler(lfh)
+
+msg = "** MCTL: %s" % (string.join(sys.argv))
+rcd = log.makeRecord(log.name, logging.INFO, None, 0, msg, None, None)
+lfh.emit(rcd)
+
 if opts.restart:
     opts.stop = opts.start = True
 
@@ -161,10 +181,13 @@ if opts.stop:
     server.stop(opts.message)
 
 if opts.upgrade:
-    server.upgrade(config, opts.force, opts.include, opts.exclude, opts.dryrun)
+    server.upgrade(config, opts.force, opts.include, opts.exclude, False)
 
 if opts.start:
     server.start(opts.force)
 
 if opts.command:
     server.command(opts.command)
+
+lfh.stream.write(os.linesep)
+lfh.close()
