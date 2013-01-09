@@ -43,8 +43,6 @@ class Package:
             uver, urlh = self.__bukkitdev_info()
         elif self.updater == "bukkitdl":
             uver, urlh = self.__bukkitdl_info()
-        elif self.updater == "githubdl":
-            uver, urlh = self.__githubdl_info()
         elif self.updater == "jenkins":
             uver, urlh = self.__jenkins_info()
         else:
@@ -184,30 +182,6 @@ class Package:
                 return (item['build_number'], item['file']['url'])
 
         return (None, None)
-
-    def __githubdl_info(self):
-        match = re.match(".*/downloads/?", self.url)
-        urlh  = self.url if match else "%s/downloads" % (self.url)
-        data  = url_get(urlh)
-
-        if not data:
-            return (None, None)
-
-        match = re.search(
-            "\"(/downloads/\w+/\w+/%s(?:[\.|_|-]([A-Za-z0-9\.]+))\.%s)\"" % (
-            self.package, self.type), data
-        )
-
-        if not match:
-            log.error("%s: failed to find any package upgrades", self.package)
-            return (None, None)
-
-        urlh = "http://github.com%s" % (match.group(1))
-
-        if match.lastindex == 1:
-            return (match.group(2), urlh)
-
-        return (None, urlh)
 
     def __jenkins_info(self):
         urlh = url_join(self.url, "rssAll")

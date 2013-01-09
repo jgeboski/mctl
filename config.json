@@ -52,7 +52,7 @@
             "path"   : "plugins",
             "type"   : "zip",
             "url"    : "https://github.com/essentials/Essentials",
-            "updater": "githubdl",
+            "updater": "bukkitdev",
             "extract": [
                 "Essentials.jar", "EssentialsChat.jar", "EssentialsSpawn.jar"
             ]
@@ -62,7 +62,7 @@
             "path"   : "plugins",
             "type"   : "zip",
             "url"    : "https://github.com/essentials/Essentials",
-            "updater": "githubdl",
+            "updater": "bukkitdev",
             "extract": ["EssentialsGeoIP.jar"]
         },
 
