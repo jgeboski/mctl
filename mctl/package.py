@@ -203,9 +203,11 @@ class Package:
                 continue
 
             version = match.group(1)
-            state   = match.group(2).lower()
+            state   = match.group(2)
+            match   = "^(?:stable|back to normal|" \
+                      "(?:\d+) test?s are still failing)$"
 
-            if state != "stable" and state != "back to normal":
+            if not re.match(match, state, re.I):
                 continue
 
             urlh = _xml_child_get(entry, "link")
