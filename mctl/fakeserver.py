@@ -22,20 +22,19 @@ import struct
 import sys
 import util
 
-from asyncore import dispatcher
-from signal   import SIGINT
+from asyncore    import dispatcher
+from collections import OrderedDict
+from signal      import SIGINT
 
 log = logging.getLogger("mctl")
 
-MC_PVER = "51"
-MC_SVER = "1.4.6"
-
-_clients = {
-    39: "1.3.2",
-    47: "1.4.2",
-    49: "1.4.4",
-    51: "1.4.6"
-}
+_clients = OrderedDict([
+    (60, "1.5.0"),
+    (51, "1.4.7"),
+    (49, "1.4.4"),
+    (47, "1.4.2"),
+    (39, "1.3.2")
+])
 
 class _FakeChannel(dispatcher):
     def __init__(self, sock, ping, kick):
@@ -86,16 +85,19 @@ class FakeServer(dispatcher):
         motd    = motd    if motd    else "Server Offline"
         message = message if message else "The server is currently offline"
 
+        mcpver = str(_clients.keys()[0]);
+        mcsver = _clients.values()[0];
+
         port = int(port)
         zero = str(0).encode("UTF-16BE")
-        mlen = len(MC_PVER) + len(MC_SVER) + len(motd) + (len(zero) * 2) + 5
+        mlen = len(mcpver) + len(mcsver) + len(motd) + (len(zero) * 2) + 5
 
         self.__ping = string.join((
             "\xFF",
             struct.pack(">h", mlen),
             "\x00\xA7\x00\x31",
-            "\x00\x00", MC_PVER.encode("UTF-16BE"),
-            "\x00\x00", MC_SVER.encode("UTF-16BE"),
+            "\x00\x00", mcpver.encode("UTF-16BE"),
+            "\x00\x00", mcsver.encode("UTF-16BE"),
             "\x00\x00", motd.encode("UTF-16BE"),
             "\x00\x00", zero,
             "\x00\x00", zero
