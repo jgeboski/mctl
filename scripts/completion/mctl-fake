@@ -16,7 +16,8 @@ _mctl_fake()
 
     local args="
         -f -h -k -s
-        --addr --foreground --help --kill --message --motd --port --server"
+        --addr --foreground --help --kill --message --motd --port --server
+        --version --version-list"
 
     COMPREPLY=($(compgen -W '$args' -- "$cur"))
 } &&

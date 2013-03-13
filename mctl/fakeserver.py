@@ -28,7 +28,7 @@ from signal      import SIGINT
 
 log = logging.getLogger("mctl")
 
-_clients = OrderedDict([
+mcclients = OrderedDict([
     (60, "1.5.0"),
     (51, "1.4.7"),
     (49, "1.4.4"),
@@ -62,12 +62,12 @@ class _FakeChannel(dispatcher):
 
         #print "Version: %s" % (ver)
 
-        if ver in _clients:
+        if ver in mcclients:
             l, = struct.unpack(">h", data[2:4])
             l  = (l * 2) + 4
 
             user   = data[4:l].decode("UTF-16BE")
-            client = _clients[ver]
+            client = mcclients[ver]
         else:
             user   = "Unknown"
             client = "Unknown"
@@ -79,14 +79,21 @@ class _FakeChannel(dispatcher):
         self.close()
 
 class FakeServer(dispatcher):
-    def __init__(self, addr = None, port = 25565, motd = None, message = None):
+    def __init__(self, addr = None, port = 25565, version = None, motd = None,
+                 message = None):
         addr    = addr    if addr    else "0.0.0.0"
         port    = port    if port    else 25565
         motd    = motd    if motd    else "Server Offline"
         message = message if message else "The server is currently offline"
 
-        mcpver = str(_clients.keys()[0]);
-        mcsver = _clients.values()[0];
+        if version and not isinstance(version, int):
+            version = int(version)
+
+        if not version in mcclients.keys():
+            version = mcclients.keys()[0]
+
+        mcpver = str(version);
+        mcsver = mcclients[version];
 
         port = int(port)
         zero = str(0).encode("UTF-16BE")
@@ -139,7 +146,8 @@ class FakeServer(dispatcher):
         self.close()
 
     @staticmethod
-    def fork(server, addr = None, port = None, motd = None, message = None):
+    def fork(server, addr = None, port = None, version = None, motd = None,
+             message = None):
         if not server:
             return
 
@@ -153,6 +161,9 @@ class FakeServer(dispatcher):
 
         if port:
             args.append("--port=%s" % (port))
+
+        if version:
+            args.append("--version=%s" % (version))
 
         if motd:
             args.append("--motd='%s'" % (motd))

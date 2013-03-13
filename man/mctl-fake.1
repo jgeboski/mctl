@@ -34,10 +34,13 @@ Show a help message and exit.
 .SH ACTIONS
 .TP
 .B \-f ", " \-\-foreground
-Do not fork into a screen session
+Do not fork into a screen session.
 .TP
 .B \-k ", " \-\-kill
 Kill the fake server
+.TP
+.B \-\-version-list
+Print a list of supported protocol versions.
 .SH ATTRIBUTES
 .HP
 .B \-\-addr
@@ -49,6 +52,11 @@ Specify an address for the fake server to bind to.
 .I PORT
 .br
 Specify a port for the fake server to bind to.
+.HP
+.B \-\-version
+.I VERSION
+.br
+Specify a version of the Minecraft protocol to use.
 .HP
 .B \-\-motd
 .I MOTD

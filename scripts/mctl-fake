@@ -25,7 +25,7 @@ import sys
 # Temporarily set the path for testing
 sys.path.append("../")
 
-from mctl.fakeserver import FakeServer
+from mctl.fakeserver import FakeServer, mcclients
 from mctl.util       import fopen, unlink
 from signal          import signal, SIGINT
 
@@ -57,6 +57,12 @@ acts.add_option(
     dest    = "kill",
     help    = "kill the server"
 )
+attrs.add_option(
+    "--version-list",
+    action  = "store_true",
+    dest    = "version_list",
+    help    = "print a list of supported protocol versions"
+)
 
 attrs.add_option(
     "--addr",
@@ -71,6 +77,13 @@ attrs.add_option(
     dest    = "port",
     metavar = "PORT",
     help    = "port to bind to and listen on"
+)
+attrs.add_option(
+    "--version",
+    action  = "store",
+    dest    = "version",
+    metavar = "VERSIONID",
+    help    = "version of the Minecraft protocol to use"
 )
 attrs.add_option(
     "--motd",
@@ -97,6 +110,15 @@ logging.basicConfig(format = "[%(levelname)s] %(message)s")
 log = logging.getLogger("mctl")
 log.setLevel(logging.INFO)
 
+if opts.version_list:
+    print "Minecraft versions:"
+
+    for ver, sver in mcclients.items():
+        print "  %s: %d" % (sver, ver)
+
+    print ""
+    exit()
+
 if not opts.server:
     parser.error("option -s, --server is required")
     exit(1)
@@ -112,7 +134,8 @@ if FakeServer.running(opts.server):
     exit(1)
 
 if not opts.foreground:
-    FakeServer.fork(opts.server, opts.addr, opts.port, opts.motd, opts.message)
+    FakeServer.fork(opts.server, opts.addr, opts.port, opts.version, opts.motd,
+                    opts.message)
     exit()
 
 pidfile = FakeServer.pidfile(opts.server)
@@ -133,7 +156,7 @@ if not fp:
 fp.write(str(pid))
 fp.close()
 
-server = FakeServer(opts.addr, opts.port, opts.motd, opts.message)
+server = FakeServer(opts.addr, opts.port, opts.version, opts.motd, opts.message)
 
 while run:
     asyncore.loop(10, False, None, 1)
