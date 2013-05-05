@@ -29,7 +29,8 @@ from signal      import SIGINT
 log = logging.getLogger("mctl")
 
 mcclients = OrderedDict([
-    (60, "1.5.0"),
+    (61, "1.5.2"),
+    (60, "1.5.1"),
     (51, "1.4.7"),
     (49, "1.4.4"),
     (47, "1.4.2"),
