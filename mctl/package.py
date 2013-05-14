@@ -220,7 +220,7 @@ class Package:
 
             version = match.group(1)
             state   = match.group(2)
-            match   = "^(?:stable|back to normal|(?:\d+) tests?\s? .* fail.*)$"
+            match   = "^(?:stable|back to normal|(?:\d+) tests?\s?.*fail.*)$"
 
             if not re.match(match, state, re.I):
                 continue
