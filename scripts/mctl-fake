@@ -114,7 +114,7 @@ if opts.version_list:
     print "Minecraft versions:"
 
     for ver, sver in mcclients.items():
-        print "  %s: %d" % (sver, ver)
+        print "  %d: %s" % (ver, sver)
 
     print ""
     exit()
