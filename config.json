@@ -6,11 +6,11 @@
             "timeout": 60,
 
             "packages": [
-                "AllowPlayers",   "CraftBukkit",      "dynmap",
-                "Essentials",     "Essentials-extra", "LWC",
-                "PermissionsEx",  "Spout",            "Transporter",
-                "VanishNoPacket", "WorldEdit",        "WorldGuard"
-                
+                "AllowPlayers",  "CraftBukkit",      "dynmap",
+                "Essentials",    "Essentials-extra", "LWC",
+                "PermissionsEx", "Spout",            "StructureSaver",
+                "Transporter",   "VanishNoPacket",   "WorldEdit",
+                "WorldGuard"
             ],
 
             "archives": [
@@ -87,6 +87,14 @@
             "type"   : "jar",
             "url"    : "http://ci.spout.org/job/SpoutPlugin/",
             "updater": "jenkins",
+            "extract": []
+        },
+
+        "StructureSaver": {
+            "path"   : "plugins",
+            "type"   : "jar",
+            "url"    : "https://github.com/Bukkit/StructureSaver/",
+            "updater": "github",
             "extract": []
         },
 

@@ -59,6 +59,8 @@ class Package:
             uver, urlh = self.__bukkitdev_info()
         elif self.updater == "bukkitdl":
             uver, urlh = self.__bukkitdl_info()
+        elif self.updater == "github":
+            uver, urlh = self.__github_info()
         elif self.updater == "jenkins":
             uver, urlh = self.__jenkins_info()
         else:
@@ -196,6 +198,30 @@ class Package:
                 return (item['build_number'], item['file']['url'])
 
         return (None, None)
+
+    def __github_info(self):
+        urlh = url_join(self.url, "releases/latest")
+        data = url_get(urlh)
+
+        if not data:
+            return (None, None)
+
+        fr    = "\S+.%s" % (self.type)
+        match = re.search("\".*/(\S+)/(%s)\"" % (fr), data, re.I)
+
+        if not match:
+            return (None, None)
+
+        urlh = url_join(self.url, "releases/download")
+        urlh = url_join(urlh, match.group(1))
+        urlh = url_join(urlh, match.group(2))
+
+        version = match.group(1)
+
+        # Clean up the version numbers
+        version = version.replace("v", "")
+
+        return (version, urlh)
 
     def __jenkins_info(self):
         urlh = url_join(self.url, "rssAll")
