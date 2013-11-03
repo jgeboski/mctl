@@ -29,137 +29,140 @@ from mctl.fakeserver import FakeServer, mcclients
 from mctl.util       import fopen, unlink
 from signal          import signal, SIGINT
 
-parser = optparse.OptionParser(
-    usage       = "usage: %prog [OPTIONS]",
-    description = "Minecraft fake server"
-)
+running = True
 
-acts  = optparse.OptionGroup(parser, "Server Actions")
-attrs = optparse.OptionGroup(parser, "Server Attributes")
+def sighandler(signum, frame):
+    global running
+    running = False
 
-parser.add_option(
-    "-s", "--server",
-    action  = "store",
-    dest    = "server",
-    metavar = "SERVER",
-    help    = "server to apply actions and attributes to"
-)
+def main():
+    global running
 
-acts.add_option(
-    "-f", "--foreground",
-    action  = "store_true",
-    dest    = "foreground",
-    help    = "do not fork into a screen session"
-)
-acts.add_option(
-    "-k", "--kill",
-    action  = "store_true",
-    dest    = "kill",
-    help    = "kill the server"
-)
-attrs.add_option(
-    "--version-list",
-    action  = "store_true",
-    dest    = "version_list",
-    help    = "print a list of supported protocol versions"
-)
+    parser = optparse.OptionParser(
+        usage       = "usage: %prog [OPTIONS]",
+        description = "Minecraft fake server"
+    )
 
-attrs.add_option(
-    "--addr",
-    action  = "store",
-    dest    = "addr",
-    metavar = "ADDRESS",
-    help    = "address to bind to and listen on"
-)
-attrs.add_option(
-    "--port",
-    action  = "store",
-    dest    = "port",
-    metavar = "PORT",
-    help    = "port to bind to and listen on"
-)
-attrs.add_option(
-    "--version",
-    action  = "store",
-    dest    = "version",
-    metavar = "VERSIONID",
-    help    = "version of the Minecraft protocol to use"
-)
-attrs.add_option(
-    "--motd",
-    action  = "store",
-    dest    = "motd",
-    metavar = "MOTD",
-    help    = "message of The Day to display"
-)
-attrs.add_option(
-    "--message",
-    action  = "store",
-    dest    = "message",
-    metavar = "MESSAGE",
-    help    = "message to display on kick"
-)
+    acts  = optparse.OptionGroup(parser, "Server Actions")
+    attrs = optparse.OptionGroup(parser, "Server Attributes")
 
-parser.add_option_group(acts)
-parser.add_option_group(attrs)
+    parser.add_option(
+        "-s", "--server",
+        action  = "store",
+        dest    = "server",
+        metavar = "SERVER",
+        help    = "server to apply actions and attributes to"
+    )
 
-opts, args = parser.parse_args()
+    acts.add_option(
+        "-f", "--foreground",
+        action  = "store_true",
+        dest    = "foreground",
+        help    = "do not fork into a screen session"
+    )
+    acts.add_option(
+        "-k", "--kill",
+        action  = "store_true",
+        dest    = "kill",
+        help    = "kill the server"
+    )
+    attrs.add_option(
+        "--version-list",
+        action  = "store_true",
+        dest    = "version_list",
+        help    = "print a list of supported protocol versions"
+    )
 
-logging.basicConfig(format = "[%(levelname)s] %(message)s")
+    attrs.add_option(
+        "--addr",
+        action  = "store",
+        dest    = "addr",
+        metavar = "ADDRESS",
+        help    = "address to bind to and listen on"
+    )
+    attrs.add_option(
+        "--port",
+        action  = "store",
+        dest    = "port",
+        metavar = "PORT",
+        help    = "port to bind to and listen on"
+    )
+    attrs.add_option(
+        "--version",
+        action  = "store",
+        dest    = "version",
+        metavar = "VERSIONID",
+        help    = "version of the Minecraft protocol to use"
+    )
+    attrs.add_option(
+        "--motd",
+        action  = "store",
+        dest    = "motd",
+        metavar = "MOTD",
+        help    = "message of The Day to display"
+    )
+    attrs.add_option(
+        "--message",
+        action  = "store",
+        dest    = "message",
+        metavar = "MESSAGE",
+        help    = "message to display on kick"
+    )
 
-log = logging.getLogger("mctl")
-log.setLevel(logging.INFO)
+    parser.add_option_group(acts)
+    parser.add_option_group(attrs)
 
-if opts.version_list:
-    print "Minecraft versions:"
+    opts, args = parser.parse_args()
+    logging.basicConfig(format = "[%(levelname)s] %(message)s")
 
-    for ver, sver in mcclients.items():
-        print "  %d: %s" % (ver, sver)
+    log = logging.getLogger("mctl")
+    log.setLevel(logging.INFO)
 
-    print ""
-    exit()
+    if opts.version_list:
+        print "Minecraft versions:"
 
-if not opts.server:
-    parser.error("option -s, --server is required")
-    exit(1)
+        for ver, sver in mcclients.items():
+            print "  %d: %s" % (ver, sver)
 
-if opts.kill:
-    if FakeServer.kill(opts.server):
-        exit()
+        print ""
+        return 0
 
-    exit(1)
+    if not opts.server:
+        parser.error("option -s, --server is required")
 
-if FakeServer.running(opts.server):
-    log.error("%s: failed to start: fake server is running", opts.server)
-    exit(1)
+    if opts.kill:
+        return 0 if FakeServer.kill(opts.server) else 1
 
-if not opts.foreground:
-    FakeServer.fork(opts.server, opts.addr, opts.port, opts.version, opts.motd,
-                    opts.message)
-    exit()
+    if FakeServer.running(opts.server):
+        log.error("%s: failed to start: fake server is running", opts.server)
+        return 1
 
-pidfile = FakeServer.pidfile(opts.server)
-pid     = os.getpid()
-run     = True
+    if not opts.foreground:
+        FakeServer.fork(opts.server, opts.addr, opts.port, opts.version,
+                        opts.motd, opts.message)
+        return 0
 
-def handler(signum, frame):
-    global run
-    run = False
+    pidfile = FakeServer.pidfile(opts.server)
+    pid     = os.getpid()
 
-signal(SIGINT,  handler)
+    fp = fopen(pidfile, "w", True)
 
-fp = fopen(pidfile, "w", True)
+    if not fp:
+        return 1
 
-if not fp:
-    exit(1)
+    fp.write(str(pid))
+    fp.close()
+    signal(SIGINT, sighandler)
 
-fp.write(str(pid))
-fp.close()
+    server = FakeServer(opts.addr, opts.port, opts.version, opts.motd,
+                        opts.message)
 
-server = FakeServer(opts.addr, opts.port, opts.version, opts.motd, opts.message)
+    while running:
+        asyncore.loop(10, False, None, 1)
 
-while run:
-    asyncore.loop(10, False, None, 1)
+    server.close()
+    unlink(pidfile)
+    return 0
 
-server.close()
-unlink(pidfile)
+if __name__ == "__main__":
+    exit(main())

@@ -29,180 +29,183 @@ from mctl.config import Config
 from mctl.server import Server
 from mctl.util   import fopen
 
-parser = optparse.OptionParser(
-    usage       = "usage: %prog [OPTIONS]",
-    description = "Minecraft server controller"
-)
+def main():
+    parser = optparse.OptionParser(
+        usage       = "usage: %prog [OPTIONS]",
+        description = "Minecraft server controller"
+    )
 
-acts  = optparse.OptionGroup(parser, "Server Actions")
-attrs = optparse.OptionGroup(parser, "Server Attributes")
+    acts  = optparse.OptionGroup(parser, "Server Actions")
+    attrs = optparse.OptionGroup(parser, "Server Attributes")
 
-parser.add_option(
-    "-g", "--config",
-    action  = "store",
-    dest    = "config",
-    metavar = "PATH",
-    help    = "specify a nonstandard config file"
-)
-parser.add_option(
-    "-s", "--server",
-    action  = "store",
-    dest    = "server",
-    metavar = "SERVER",
-    help    = "server to apply actions and attributes to"
-)
-parser.add_option(
-    "-l", "--list",
-    action  = "store_true",
-    dest    = "list",
-    help    = "list the current servers"
-)
-parser.add_option(
-    "-f", "--force",
-    action  = "store_true",
-    dest    = "force",
-    help    = "force specified actions"
-)
-parser.add_option(
-    "-d", "--dry-run",
-    action  = "store_true",
-    dest    = "dryrun",
-    help    = "run on a trial basis; do not modify packages"
-)
+    parser.add_option(
+        "-g", "--config",
+        action  = "store",
+        dest    = "config",
+        metavar = "PATH",
+        help    = "specify a nonstandard config file"
+    )
+    parser.add_option(
+        "-s", "--server",
+        action  = "store",
+        dest    = "server",
+        metavar = "SERVER",
+        help    = "server to apply actions and attributes to"
+    )
+    parser.add_option(
+        "-l", "--list",
+        action  = "store_true",
+        dest    = "list",
+        help    = "list the current servers"
+    )
+    parser.add_option(
+        "-f", "--force",
+        action  = "store_true",
+        dest    = "force",
+        help    = "force specified actions"
+    )
+    parser.add_option(
+        "-d", "--dry-run",
+        action  = "store_true",
+        dest    = "dryrun",
+        help    = "run on a trial basis; do not modify packages"
+    )
 
-acts.add_option(
-    "-u", "--upgrade",
-    action  = "store_true",
-    dest    = "upgrade",
-    help    = "upgrade the server packages"
-)
-acts.add_option(
-    "-i", "--start",
-    action  = "store_true",
-    dest    = "start",
-    help    = "start the sever"
-)
-acts.add_option(
-    "-q", "--stop",
-    action  = "store_true",
-    dest    = "stop",
-    help    = "stop the sever"
-)
-acts.add_option(
-    "-r", "--restart",
-    action  = "store_true",
-    dest    = "restart",
-    help    = "restart the sever"
-)
-acts.add_option(
-    "-c", "--command",
-    action  = "store",
-    dest    = "command",
-    metavar = "COMMAND",
-    help    = "run a command on the server"
-)
+    acts.add_option(
+        "-u", "--upgrade",
+        action  = "store_true",
+        dest    = "upgrade",
+        help    = "upgrade the server packages"
+    )
+    acts.add_option(
+        "-i", "--start",
+        action  = "store_true",
+        dest    = "start",
+        help    = "start the sever"
+    )
+    acts.add_option(
+        "-q", "--stop",
+        action  = "store_true",
+        dest    = "stop",
+        help    = "stop the sever"
+    )
+    acts.add_option(
+        "-r", "--restart",
+        action  = "store_true",
+        dest    = "restart",
+        help    = "restart the sever"
+    )
+    acts.add_option(
+        "-c", "--command",
+        action  = "store",
+        dest    = "command",
+        metavar = "COMMAND",
+        help    = "run a command on the server"
+    )
 
-attrs.add_option(
-    "--include",
-    action  = "store",
-    dest    = "include",
-    metavar = "LIST",
-    help    = "list packages to include"
-)
-attrs.add_option(
-    "--exclude",
-    action  = "store",
-    dest    = "exclude",
-    metavar = "LIST",
-    help    = "list packages to exclude"
-)
-attrs.add_option(
-    "--message",
-    action  = "store",
-    dest    = "message",
-    metavar = "MESSAGE",
-    help    = "message for restart/stop"
-)
-attrs.add_option(
-    "--timeout",
-    action  = "store",
-    dest    = "timeout",
-    metavar = "TIMEOUT",
-    help    = "server shutdown timeout in seconds"
-)
+    attrs.add_option(
+        "--include",
+        action  = "store",
+        dest    = "include",
+        metavar = "LIST",
+        help    = "list packages to include"
+    )
+    attrs.add_option(
+        "--exclude",
+        action  = "store",
+        dest    = "exclude",
+        metavar = "LIST",
+        help    = "list packages to exclude"
+    )
+    attrs.add_option(
+        "--message",
+        action  = "store",
+        dest    = "message",
+        metavar = "MESSAGE",
+        help    = "message for restart/stop"
+    )
+    attrs.add_option(
+        "--timeout",
+        action  = "store",
+        dest    = "timeout",
+        metavar = "TIMEOUT",
+        help    = "server shutdown timeout in seconds"
+    )
 
-parser.add_option_group(acts)
-parser.add_option_group(attrs)
+    parser.add_option_group(acts)
+    parser.add_option_group(attrs)
 
-opts, args = parser.parse_args()
+    opts, args = parser.parse_args()
 
-logging.basicConfig(format = "[%(levelname)s] %(message)s")
+    logging.basicConfig(format = "[%(levelname)s] %(message)s")
 
-config = Config(opts.config)
-log    = logging.getLogger("mctl")
+    config = Config(opts.config)
+    log    = logging.getLogger("mctl")
 
-log.setLevel(logging.INFO)
+    log.setLevel(logging.INFO)
+    config.load()
 
-config.load()
+    server  = None
+    package = None
 
-server  = None
-package = None
+    if opts.list:
+        servers = config.servers_get()
+        servers = servers.keys()
 
-if opts.list:
-    servers = config.servers_get()
-    servers = servers.keys()
+        if len(servers) < 1:
+            print "No servers found"
 
-    if len(servers) < 1:
-        print "No servers found"
+        print "Server(s): %s" % (string.join(servers, ", "))
+        return 0
 
-    print "Server(s): %s" % (string.join(servers, ", "))
-    exit()
+    if not opts.server:
+        parser.error("option -s, --server is required")
 
-if not opts.server:
-    parser.error("option -s, --server is required")
+    if not config.server_exists(opts.server):
+        parser.error("option -s, --server requires a valid server")
 
-if not config.server_exists(opts.server):
-    parser.error("option -s, --server requires a valid server")
+    server = config.server_get(opts.server)
 
-server = config.server_get(opts.server)
+    if opts.timeout:
+        server['timeout'] = int(opts.timeout)
 
-if opts.timeout:
-    server['timeout'] = int(opts.timeout)
+    config.server_set(opts.server, server)
+    server = Server(opts.server, server)
 
-config.server_set(opts.server, server)
-server = Server(opts.server, server)
+    if opts.dryrun:
+        if opts.upgrade:
+            server.upgrade(config, opts.force, opts.include, opts.exclude, True)
+        return 0
 
-if opts.dryrun:
+    lfh = os.path.join(server.path, "mctl.log")
+    lfh = logging.FileHandler(lfh)
+    fmt = logging.Formatter("%(asctime)s [%(levelname)s] %(message)s",
+                            "%y-%m-%d %H:%M:%S")
+
+    lfh.setFormatter(fmt)
+    log.addHandler(lfh)
+
+    msg = "** MCTL: %s" % (string.join(sys.argv))
+    rcd = log.makeRecord(log.name, logging.INFO, None, 0, msg, None, None)
+    lfh.emit(rcd)
+
+    if opts.restart:
+        opts.stop = opts.start = True
+
+    if opts.stop:
+        server.stop(opts.message)
+
     if opts.upgrade:
-        server.upgrade(config, opts.force, opts.include, opts.exclude, True)
-    exit()
+        server.upgrade(config, opts.force, opts.include, opts.exclude, False)
 
-lfh = os.path.join(server.path, "mctl.log")
-lfh = logging.FileHandler(lfh)
-fmt = logging.Formatter("%(asctime)s [%(levelname)s] %(message)s",
-                        "%y-%m-%d %H:%M:%S")
+    if opts.start:
+        server.start(opts.force)
 
-lfh.setFormatter(fmt)
-log.addHandler(lfh)
+    if opts.command:
+        server.command(opts.command)
 
-msg = "** MCTL: %s" % (string.join(sys.argv))
-rcd = log.makeRecord(log.name, logging.INFO, None, 0, msg, None, None)
-lfh.emit(rcd)
+    lfh.stream.write(os.linesep)
+    lfh.close()
 
-if opts.restart:
-    opts.stop = opts.start = True
-
-if opts.stop:
-    server.stop(opts.message)
-
-if opts.upgrade:
-    server.upgrade(config, opts.force, opts.include, opts.exclude, False)
-
-if opts.start:
-    server.start(opts.force)
-
-if opts.command:
-    server.command(opts.command)
-
-lfh.stream.write(os.linesep)
-lfh.close()
+if __name__ == "__main__":
+    exit(main())
