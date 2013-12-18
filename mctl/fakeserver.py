@@ -14,6 +14,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import base64
+import favicons
+import json
 import logging
 import os
 import socket
@@ -22,106 +25,136 @@ import struct
 import sys
 import util
 
-from asyncore    import dispatcher
-from collections import OrderedDict
-from signal      import SIGINT
+from asyncore import dispatcher
+from signal   import SIGINT
 
 log = logging.getLogger("mctl")
 
-mcclients = OrderedDict([
-    (78, "1.6.4"),
-    (74, "1.6.2"),
-    (73, "1.6.1"),
-    (61, "1.5.2"),
-    (60, "1.5.1"),
-    (51, "1.4.6/1.4.7"),
-    (49, "1.4.4/1.4.5"),
-    (47, "1.4.2"),
-    (39, "1.3.1/1.3.2"),
-    (0,  "<= 1.2.5")
-])
-
-class _FakeChannel(dispatcher):
+class FakeChannel(dispatcher):
     def __init__(self, sock, ping, kick):
+        self.sock = sock
+        self.ping = ping
+        self.kick = kick
+
+        self.version = 0
         dispatcher.__init__(self, sock)
 
-        self.__ping = ping
-        self.__kick = kick
+    def recv(self):
+        size = util.varint_unpack_sock(self.sock)
+        data = str()
+        read = 0
+
+        while read < size:
+            try:
+                data += self.sock.recv(size - read)
+            except:
+                return data
+
+            read = len(data)
+
+        return data
+
+    def send(self, *args):
+        data = self.pack(*args)
+        size = len(data)
+        sent = 0
+
+        while sent < size:
+            sent += self.sock.send(data[sent:])
+
+    def pack(self, *args):
+        data = str()
+
+        for arg in args:
+            data += arg if not isinstance(arg, int) else chr(arg)
+
+        size = len(data)
+        data = util.varint_pack(size) + data
+
+        return data
 
     def handle_read(self):
-        data = self.recv(256)
-
-        if len(data) < 1:
-            return
-
-        if data[0] == '\xFE':
-            self.send(self.__ping)
-            return
-
-        if data[0] != '\x02':
-            self.send(str())
-            return
-
         addr, port = self.addr
-        ver        = ord(data[1])
+        data = self.recv()
+        size = len(data)
 
-        #print "Version: %s" % (ver)
+        if size < 1:
+            return
 
-        if ver in mcclients:
-            l, = struct.unpack(">h", data[2:4])
-            l  = (l * 2) + 4
+        pid = ord(data[0])
 
-            user   = data[4:l].decode("UTF-16BE")
-            client = mcclients[ver]
-        else:
-            user   = "Unknown"
-            client = "Unknown"
+        if self.version == 0:
+            if pid == 0x00:
+                self.version = ord(data[1])
+            return
 
-        log.info("%s[%s:%d] connected (MC: %s)", user, addr, port, client)
-        self.send(self.__kick)
+        if pid != 0x00:
+            if pid == 0x01:
+                self.send(data)
+            return
+
+        if size == 1:
+            ping = dict(self.ping)
+            ping['version']['protocol'] = self.version
+
+            jd = json.dumps(ping).encode("utf8")
+            jd = self.pack(jd)
+
+            self.send(0x00, jd)
+            return
+
+        data, nize = util.varint_unpack(data[1:])
+        name = data[:nize].decode("utf8")
+
+        jd = json.dumps(self.kick).encode("utf8")
+        jd = self.pack(jd)
+
+        self.send(0x00, jd)
+        log.info("%s[%s:%d] connected", name, addr, port)
 
     def handle_close(self):
         self.close()
 
 class FakeServer(dispatcher):
-    def __init__(self, addr = None, port = 25565, version = None, motd = None,
+    def __init__(self, addr = None, port = 25565, favicon = None, motd = None,
                  message = None):
         addr    = addr    if addr    else "0.0.0.0"
         port    = port    if port    else 25565
         motd    = motd    if motd    else "Server Offline"
         message = message if message else "The server is currently offline"
 
-        if version and not isinstance(version, int):
-            version = int(version)
-
-        if not version in mcclients.keys():
-            version = mcclients.keys()[0]
-
-        mcpver = str(version);
-        mcsver = mcclients[version];
-
         port = int(port)
-        zero = str(0).encode("UTF-16BE")
-        mlen = len(mcpver) + len(mcsver) + len(motd) + (len(zero) * 2) + 5
 
-        self.__ping = string.join((
-            "\xFF",
-            struct.pack(">h", mlen),
-            "\x00\xA7\x00\x31",
-            "\x00\x00", mcpver.encode("UTF-16BE"),
-            "\x00\x00", mcsver.encode("UTF-16BE"),
-            "\x00\x00", motd.encode("UTF-16BE"),
-            "\x00\x00", zero,
-            "\x00\x00", zero
-        ), '')
+        self.ping = {
+            "version": {
+                "name": "Minecraft!",
+                "protocol": 0
+            },
 
-        mlen = len(message)
+            "players": {
+                "max": 0,
+                "online": 0
+            },
 
-        self.__kick = string.join((
-            "\xFF",
-            struct.pack(">h", mlen),
-            message.encode("UTF-16BE")
-        ), '')
+            "description": motd
+        }
+
+        self.kick = {
+            "text": message
+        }
+
+        if favicon:
+            fp = util.fopen(favicon, "r")
+
+            if fp:
+                data = fp.read()
+                data = base64.b64encode(data)
+
+                self.ping['favicon'] = "data:image/png;base64," + data
+                fp.close()
+
+        if not "favicon" in self.ping.keys():
+            self.ping['favicon'] = "data:image/png;base64," + favicons.default
 
         dispatcher.__init__(self)
         self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -130,28 +163,21 @@ class FakeServer(dispatcher):
             self.bind((addr, port))
             self.listen(5)
         except Exception, msg:
-            self.close()
-
             log.critical("Failed to listen on %s:%d: %s", addr, port, msg)
+            self.close()
             return
 
         log.info("Fake server started on %s:%d", addr, port)
 
     def handle_accept(self):
-        pair = self.accept()
-
-        if not pair:
-            return
-
-        sock, addr = pair
-
-        _FakeChannel(sock, self.__ping, self.__kick)
+        sock = self.accept()
+        FakeChannel(sock[0], self.ping, self.kick)
 
     def handle_close(self):
         self.close()
 
     @staticmethod
-    def fork(server, addr = None, port = None, version = None, motd = None,
+    def fork(server, addr = None, port = None, favicon = None, motd = None,
              message = None):
         if not server:
             return
@@ -167,8 +193,8 @@ class FakeServer(dispatcher):
         if port:
             args.append("--port=%s" % (port))
 
-        if version:
-            args.append("--version=%s" % (version))
+        if favicon:
+            args.append("--favicon='%s'" % (favicon))
 
         if motd:
             args.append("--motd='%s'" % (motd))

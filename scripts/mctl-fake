@@ -25,7 +25,7 @@ import sys
 # Temporarily set the path for testing
 sys.path.append("../")
 
-from mctl.fakeserver import FakeServer, mcclients
+from mctl.fakeserver import FakeServer
 from mctl.util       import fopen, unlink
 from signal          import signal, SIGINT
 
@@ -66,12 +66,6 @@ def main():
         dest    = "kill",
         help    = "kill the server"
     )
-    attrs.add_option(
-        "--version-list",
-        action  = "store_true",
-        dest    = "version_list",
-        help    = "print a list of supported protocol versions"
-    )
 
     attrs.add_option(
         "--addr",
@@ -88,11 +82,11 @@ def main():
         help    = "port to bind to and listen on"
     )
     attrs.add_option(
-        "--version",
+        "--favicon",
         action  = "store",
-        dest    = "version",
-        metavar = "VERSIONID",
-        help    = "version of the Minecraft protocol to use"
+        dest    = "favicon",
+        metavar = "FILE",
+        help    = "favicon to display (PNG image)"
     )
     attrs.add_option(
         "--motd",
@@ -118,15 +112,6 @@ def main():
     log = logging.getLogger("mctl")
     log.setLevel(logging.INFO)
 
-    if opts.version_list:
-        print "Minecraft versions:"
-
-        for ver, sver in mcclients.items():
-            print "  %d: %s" % (ver, sver)
-
-        print ""
-        return 0
-
     if not opts.server:
         parser.error("option -s, --server is required")
 
@@ -138,7 +123,7 @@ def main():
         return 1
 
     if not opts.foreground:
-        FakeServer.fork(opts.server, opts.addr, opts.port, opts.version,
+        FakeServer.fork(opts.server, opts.addr, opts.port, opts.favicon,
                         opts.motd, opts.message)
         return 0
 
@@ -154,7 +139,7 @@ def main():
     fp.close()
     signal(SIGINT, sighandler)
 
-    server = FakeServer(opts.addr, opts.port, opts.version, opts.motd,
+    server = FakeServer(opts.addr, opts.port, opts.favicon, opts.motd,
                         opts.message)
 
     while running:

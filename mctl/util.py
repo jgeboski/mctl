@@ -222,3 +222,53 @@ def url_join(base, url):
         base += "/"
 
     return urlparse.urljoin(base, url)
+
+def varint_pack(value):
+    value = int(value)
+    data  = str()
+
+    bs = value & 0x7F
+    value >>= 7
+
+    while value != 0:
+        data += chr(0x80 | bs)
+
+        bs = value & 0x7F
+        value >>= 7
+
+    data += chr(bs)
+    return data
+
+def varint_unpack(data):
+    v = s = 0
+
+    for b in data:
+        try:
+            b    = ord(b)
+            data = data[1:]
+        except:
+            return (data, v)
+
+        v |= (b & 0x7F) << s
+        s += 7
+
+        if (b & 0x80) == 0:
+            return (data, v)
+
+    return (data, v)
+
+def varint_unpack_sock(sock):
+    v = s = 0
+
+    while True:
+        try:
+            b = sock.recv(1)
+            b = ord(b)
+        except:
+            return v
+
+        v |= (b & 0x7F) << s
+        s += 7
+
+        if (b & 0x80) == 0:
+            return v

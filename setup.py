@@ -26,10 +26,14 @@ class mctl_install(install):
 
     user_options = install.user_options
     user_options.extend([
-        ('install-man=',        None,
-            'installation directory for man documentation'),
-        ('install-completion=', None,
-            'installation directory for completion scripts')
+        ("install-man=",
+            None,
+            "installation directory for man documentation"
+        ),
+        ("install-completion=",
+            None,
+            "installation directory for completion scripts"
+        )
     ])
 
     def initialize_options(self):
@@ -46,16 +50,17 @@ class mctl_install(install):
 
         if self.install_completion:
             self.distribution.data_files.append(
-                (self.install_completion,
-                    ['scripts/completion/mctl',
-                     'scripts/completion/mctl-fake'])
+                (self.install_completion, [
+                    "scripts/completion/mctl",
+                    "scripts/completion/mctl-fake"
+                ])
             )
 
         if self.install_man:
             man1 = os.path.join(self.install_man, "man1")
 
             self.distribution.data_files.append(
-                (man1, ['man/mctl.1', 'man/mctl-fake.1'])
+                (man1, ["man/mctl.1", "man/mctl-fake.1"])
             )
 
 setup(
