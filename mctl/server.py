@@ -29,30 +29,9 @@ class Server:
         self.path     = server['path']
         self.launch   = server['launch']
         self.timeout  = server['timeout']
-        self.archives = server['archives']
         self.packages = server['packages']
 
         self.screen_name = "mctl-%s" % (name)
-
-    def _archive(self):
-        for archive in self.archives:
-            path = os.path.join(self.path, archive['file'])
-
-            try:
-                size = os.path.getsize(path)
-            except:
-                continue
-
-            if size < (archive['size'] * 1024):
-                continue
-
-            apath = os.path.basename(path)
-            apath = "%s.%d.bz2" % (apath, time.time())
-            apath = os.path.join(archive['path'], apath)
-
-            util.mkdir(archive['path'])
-            util.compress_file_bz2(path, apath)
-            util.unlink(path)
 
     def command(self, command):
         util.screen_command_send(self.screen_name, command)
@@ -105,7 +84,6 @@ class Server:
             log.error("%s: failed to start: server is running", self.server)
             return
 
-        self._archive()
         log.info("%s: server starting...", self.server)
 
         os.chdir(self.path)

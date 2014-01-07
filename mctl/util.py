@@ -22,12 +22,11 @@ import sys
 import urllib2
 import urlparse
 
-from bz2        import BZ2File
 from math       import floor
 from subprocess import Popen, PIPE
 
 TIMEOUT_HTTP = 5
-log          = logging.getLogger("mctl")
+log = logging.getLogger("mctl")
 
 def execute_command(command, quiet = True):
     args = shlex.split(str(command))
@@ -89,54 +88,10 @@ def unlink(path):
     try:
         os.remove(path)
     except Exception, msg:
-        log.error("Failed to remove: %s: %s", archive, msg)
+        log.error("Failed to remove: %s: %s", path, msg)
         return False
 
     return True
-
-def compress_file_bz2(path, apath):
-        fp = fopen(path, "r")
-
-        if not fp:
-            return False
-
-        try:
-            bzf = BZ2File(apath, "w")
-        except Exception, msg:
-            log.error("Failed to open: %s: %s", apath, msg)
-            return False
-
-        size = os.path.getsize(path)
-        l    = 0
-
-        while True:
-            data = fp.read(1024)
-
-            if not data:
-                break
-
-            bzf.write(data)
-
-            if log.level != logging.INFO:
-                continue
-
-            p = (float(fp.tell()) / float(size)) * 100
-            p = int(floor(p))
-
-            if l == p:
-                continue
-
-            sys.stdout.write("\033[2K")
-            sys.stdout.write("Compressing(%d%%): %s\r" % (p, path))
-            sys.stdout.flush()
-            l = p
-
-        fp.close()
-        bzf.close()
-
-        log.info("Compressed: %s", path)
-        log.info("    Output: %s", apath)
-        return True
 
 def download(url, path):
     if not url or not path:

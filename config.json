@@ -11,14 +11,6 @@
                 "PermissionsEx", "Spout",            "StructureSaver",
                 "Transporter",   "VanishNoPacket",   "WorldEdit",
                 "WorldGuard"
-            ],
-
-            "archives": [
-                {
-                    "path": "/absolute/path/to/server/root/logs",
-                    "size": 20000,
-                    "file": "server.log"
-                }
             ]
         }
     },

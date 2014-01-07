@@ -156,21 +156,11 @@ class Config:
 
         return packages
 
-    def archive_new(self):
-        archive = {
-            'path': None,
-            'size': 0,
-            'file': None
-        }
-
-        return archive
-
     def server_new(self):
         server = {
             'path'    : None,
             'launch'  : None,
             'timeout' : 0,
-            'archives': list(),
             'packages': list()
         }
 
@@ -195,10 +185,6 @@ class Config:
         srv = self.__config['servers'][server]
         srv = _merge_dicts(self.server_new(), srv)
 
-        for i in range(len(srv['archives'])):
-            srv['archives'][i] = _merge_dicts(self.archive_new(),
-                                              srv['archives'][i])
-
         return srv
 
     def server_set(self, name, server):
@@ -209,11 +195,6 @@ class Config:
             return
 
         srv = _merge_dicts(self.server_new(), server)
-
-        for i in range(len(srv['archives'])):
-            srv['archives'][i] = _merge_dicts(self.archive_new(),
-                                              srv['archives'][i])
-
         self.__config['servers'][name] = srv
 
     def server_remove(self, server):
