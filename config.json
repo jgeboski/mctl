@@ -6,24 +6,20 @@
             "timeout": 60,
 
             "packages": [
-                "AllowPlayers",  "CraftBukkit",      "dynmap",
-                "Essentials",    "Essentials-extra", "LWC",
-                "PermissionsEx", "Spout",            "StructureSaver",
-                "Transporter",   "VanishNoPacket",   "WorldEdit",
+                "CraftBukkit",
+                "dynmap",
+                "Essentials",
+                "Essentials-extra",
+                "LWC",
+                "PermissionsEx",
+                "VanishNoPacket",
+                "WorldEdit",
                 "WorldGuard"
             ]
         }
     },
 
     "packages": {
-        "AllowPlayers": {
-            "path"   : "plugins",
-            "type"   : "jar",
-            "url"    : "http://dev.bukkit.org/server-mods/allowplayers/",
-            "updater": "bukkitdev",
-            "extract": []
-        },
-
         "CraftBukkit": {
             "path"   : null,
             "type"   : "jar",
@@ -34,26 +30,28 @@
 
         "dynmap": {
             "path"   : "plugins",
-            "type"   : "zip",
-            "url"    : "http://webbukkit.org:8080/job/dynmap/",
-            "updater": "jenkins",
-            "extract": ["dynmap.jar", "dynmap"]
+            "type"   : "jar",
+            "url"    : "http://dev.bukkit.org/bukkit-plugins/dynmap/",
+            "updater": "bukkitdev",
+            "extract": []
         },
 
         "Essentials": {
             "path"   : "plugins",
             "type"   : "zip",
-            "url"    : "https://github.com/essentials/Essentials",
+            "url"    : "http://dev.bukkit.org/bukkit-plugins/essentials/",
             "updater": "bukkitdev",
             "extract": [
-                "Essentials.jar", "EssentialsChat.jar", "EssentialsSpawn.jar"
+                "Essentials.jar",
+                "EssentialsChat.jar",
+                "EssentialsSpawn.jar"
             ]
         },
 
         "Essentials-extra": {
             "path"   : "plugins",
             "type"   : "zip",
-            "url"    : "https://github.com/essentials/Essentials",
+            "url"    : "http://dev.bukkit.org/bukkit-plugins/essentials/",
             "updater": "bukkitdev",
             "extract": ["EssentialsGeoIP.jar"]
         },
@@ -69,31 +67,7 @@
         "PermissionsEx": {
             "path"   : "plugins",
             "type"   : "jar",
-            "url"    : "http://webbukkit.org:8080/job/PermissionsEx/",
-            "updater": "jenkins",
-            "extract": []
-        },
-
-        "Spout": {
-            "path"   : "plugins",
-            "type"   : "jar",
-            "url"    : "http://ci.spout.org/job/SpoutPlugin/",
-            "updater": "jenkins",
-            "extract": []
-        },
-
-        "StructureSaver": {
-            "path"   : "plugins",
-            "type"   : "jar",
-            "url"    : "https://github.com/Bukkit/StructureSaver/",
-            "updater": "github",
-            "extract": []
-        },
-
-        "Transporter": {
-            "path"   : "plugins",
-            "type"   : "jar",
-            "url"    : "http://dev.bukkit.org/server-mods/transporter/",
+            "url"    : "http://dev.bukkit.org/bukkit-plugins/permissionsex/
             "updater": "bukkitdev",
             "extract": []
         },
@@ -109,16 +83,16 @@
         "WorldEdit": {
             "path"   : "plugins",
             "type"   : "jar",
-            "url"    : "http://build.sk89q.com/job/WorldEdit/",
-            "updater": "jenkins",
+            "url"    : "http://dev.bukkit.org/bukkit-plugins/worldedit/",
+            "updater": "bukkitdev",
             "extract": []
         },
 
         "WorldGuard": {
             "path"   : "plugins",
             "type"   : "jar",
-            "url"    : "http://build.sk89q.com/job/WorldGuard/",
-            "updater": "jenkins",
+            "url"    : "http://dev.bukkit.org/bukkit-plugins/worldguard/",
+            "updater": "bukkitdev",
             "extract": []
         }
     }
