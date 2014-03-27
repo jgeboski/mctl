@@ -28,16 +28,9 @@ sys.path.append("../")
 from mctl.fakeserver import FakeServer
 from mctl.util       import fopen, unlink
 from signal          import signal, SIGINT
+from threading       import Event
 
-running = True
-
-def sighandler(signum, frame):
-    global running
-    running = False
-
-def main():
-    global running
-
+def parseargs():
     parser = optparse.OptionParser(
         usage       = "usage: %prog [OPTIONS]",
         description = "Minecraft fake server"
@@ -105,11 +98,13 @@ def main():
 
     parser.add_option_group(acts)
     parser.add_option_group(attrs)
+    return parser.parse_args()
 
-    opts, args = parser.parse_args()
-    logging.basicConfig(format = "[%(levelname)s] %(message)s")
+def main():
+    opts, args = parseargs()
 
     log = logging.getLogger("mctl")
+    logging.basicConfig(format = "[%(levelname)s] %(message)s")
     log.setLevel(logging.INFO)
 
     if not opts.server:
@@ -129,20 +124,21 @@ def main():
 
     pidfile = FakeServer.pidfile(opts.server)
     pid     = os.getpid()
-
-    fp = fopen(pidfile, "w", True)
+    fp      = fopen(pidfile, "w", True)
 
     if not fp:
         return 1
 
     fp.write(str(pid))
     fp.close()
-    signal(SIGINT, sighandler)
+
+    running = Event()
+    signal(SIGINT, lambda s, f: running.set())
 
     server = FakeServer(opts.addr, opts.port, opts.favicon, opts.motd,
                         opts.message)
 
-    while running:
+    while not running.isSet():
         asyncore.loop(10, False, None, 1)
 
     server.close()
