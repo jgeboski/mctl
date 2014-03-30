@@ -27,6 +27,7 @@ import util
 
 from asyncore import dispatcher
 from signal   import SIGINT
+from socket   import SHUT_WR
 
 log = logging.getLogger("mctl")
 
@@ -38,6 +39,10 @@ class FakeChannel(dispatcher):
 
         self.version = 0
         dispatcher.__init__(self, sock)
+
+    def close(self):
+        self.sock.shutdown(SHUT_WR)
+        dispatcher.close(self)
 
     def recv(self):
         size = util.varint_unpack_sock(self.sock)
@@ -79,6 +84,7 @@ class FakeChannel(dispatcher):
         size = len(data)
 
         if size < 1:
+            self.close()
             return
 
         pid = ord(data[0])
@@ -86,11 +92,17 @@ class FakeChannel(dispatcher):
         if self.version == 0:
             if pid == 0x00:
                 self.version = ord(data[1])
+                return
+
+            self.close()
             return
 
         if pid != 0x00:
             if pid == 0x01:
                 self.send(data)
+                return
+
+            self.close()
             return
 
         if size == 1:
@@ -109,8 +121,8 @@ class FakeChannel(dispatcher):
         jd = json.dumps(self.kick).encode("utf8")
         jd = self.pack(jd)
 
-        self.send(0x00, jd)
         log.info("%s[%s:%d] connected", name, addr, port)
+        self.send(0x00, jd)
 
     def handle_close(self):
         self.close()

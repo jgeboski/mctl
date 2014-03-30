@@ -139,7 +139,7 @@ def main():
                         opts.message)
 
     while not running.isSet():
-        asyncore.loop(10, False, None, 1)
+        asyncore.loop(timeout = 1, count = 1)
 
     server.close()
     unlink(pidfile)
