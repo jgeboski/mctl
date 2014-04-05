@@ -27,7 +27,6 @@ import util
 
 from asyncore import dispatcher
 from signal   import SIGINT
-from socket   import SHUT_WR
 
 log = logging.getLogger("mctl")
 
@@ -39,10 +38,6 @@ class FakeChannel(dispatcher):
 
         self.version = 0
         dispatcher.__init__(self, sock)
-
-    def close(self):
-        self.sock.shutdown(SHUT_WR)
-        dispatcher.close(self)
 
     def recv(self):
         size = util.varint_unpack_sock(self.sock)
