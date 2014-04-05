@@ -85,7 +85,7 @@ class FakeChannel(dispatcher):
         pid = ord(data[0])
 
         if self.version == 0:
-            if pid == 0x00:
+            if pid == 0x00 and size > 1:
                 self.version = ord(data[1])
                 return
 
