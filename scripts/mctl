@@ -15,8 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import argparse
 import logging
-import optparse
 import os
 import string
 import sys
@@ -30,116 +30,141 @@ from mctl.server import Server
 from mctl.util   import fopen
 
 def parseargs():
-    parser = optparse.OptionParser(
-        usage       = "usage: %prog [OPTIONS]",
+    parser = argparse.ArgumentParser(
         description = "Minecraft server controller"
     )
 
-    acts  = optparse.OptionGroup(parser, "Server Actions")
-    attrs = optparse.OptionGroup(parser, "Server Attributes")
-
-    parser.add_option(
+    parser.add_argument(
         "-g", "--config",
-        action  = "store",
-        dest    = "config",
-        metavar = "PATH",
-        help    = "specify a nonstandard config file"
+        required = False,
+        type     = str,
+        action   = "store",
+        dest     = "config",
+        metavar  = "PATH",
+        help     = "specify a nonstandard config file"
     )
-    parser.add_option(
+
+    parser.add_argument(
         "-s", "--server",
-        action  = "store",
-        dest    = "server",
-        metavar = "SERVER",
-        help    = "server to apply actions and attributes to"
+        required = True,
+        type     = str,
+        action   = "store",
+        dest     = "server",
+        metavar  = "SERVER",
+        help     = "server to apply actions and attributes to"
     )
-    parser.add_option(
+
+    parser.add_argument(
         "-l", "--list",
-        action  = "store_true",
-        dest    = "list",
-        help    = "list the current servers"
+        required = False,
+        action   = "store_true",
+        dest     = "list",
+        help     = "list the current servers"
     )
-    parser.add_option(
+
+    parser.add_argument(
         "-f", "--force",
-        action  = "store_true",
-        dest    = "force",
-        help    = "force specified actions"
+        required = False,
+        action   = "store_true",
+        dest     = "force",
+        help     = "force specified actions"
     )
-    parser.add_option(
+
+    parser.add_argument(
         "-d", "--dry-run",
-        action  = "store_true",
-        dest    = "dryrun",
-        help    = "run on a trial basis; do not modify packages"
+        required = False,
+        action   = "store_true",
+        dest     = "dryrun",
+        help     = "run on a trial basis; do not modify packages"
     )
 
-    acts.add_option(
+    parser.add_argument(
         "-u", "--upgrade",
-        action  = "store_true",
-        dest    = "upgrade",
-        help    = "upgrade the server packages"
+        required = False,
+        action   = "store_true",
+        dest     = "upgrade",
+        help     = "upgrade the server packages"
     )
-    acts.add_option(
+
+    parser.add_argument(
         "-i", "--start",
-        action  = "store_true",
-        dest    = "start",
-        help    = "start the sever"
+        required = False,
+        action   = "store_true",
+        dest     = "start",
+        help     = "start the sever"
     )
-    acts.add_option(
+
+    parser.add_argument(
         "-q", "--stop",
-        action  = "store_true",
-        dest    = "stop",
-        help    = "stop the sever"
+        required = False,
+        action   = "store_true",
+        dest     = "stop",
+        help     = "stop the sever"
     )
-    acts.add_option(
+
+    parser.add_argument(
         "-r", "--restart",
-        action  = "store_true",
-        dest    = "restart",
-        help    = "restart the sever"
+        required = False,
+        action   = "store_true",
+        dest     = "restart",
+        help     = "restart the sever"
     )
-    acts.add_option(
+
+    parser.add_argument(
         "-c", "--command",
-        action  = "store",
-        dest    = "command",
-        metavar = "COMMAND",
-        help    = "run a command on the server"
+        required = False,
+        type     = str,
+        action   = "store",
+        dest     = "command",
+        metavar  = "COMMAND",
+        help     = "run a command on the server"
     )
 
-    attrs.add_option(
+    parser.add_argument(
         "--include",
-        action  = "store",
-        dest    = "include",
-        metavar = "LIST",
-        help    = "list packages to include"
-    )
-    attrs.add_option(
-        "--exclude",
-        action  = "store",
-        dest    = "exclude",
-        metavar = "LIST",
-        help    = "list packages to exclude"
-    )
-    attrs.add_option(
-        "--message",
-        action  = "store",
-        dest    = "message",
-        metavar = "MESSAGE",
-        help    = "message for restart/stop"
-    )
-    attrs.add_option(
-        "--timeout",
-        action  = "store",
-        dest    = "timeout",
-        metavar = "TIMEOUT",
-        help    = "server shutdown timeout in seconds"
+        required = False,
+        type     = str,
+        action   = "store",
+        dest     = "include",
+        metavar  = "LIST",
+        help     = "list packages to include"
     )
 
-    parser.add_option_group(acts)
-    parser.add_option_group(attrs)
+    parser.add_argument(
+        "--exclude",
+        required = False,
+        type     = str,
+        action   = "store",
+        dest     = "exclude",
+        metavar  = "LIST",
+        help     = "list packages to exclude"
+    )
+
+    parser.add_argument(
+        "--message",
+        required = False,
+        type     = str,
+        action   = "store",
+        dest     = "message",
+        metavar  = "MESSAGE",
+        help     = "message for restart/stop"
+    )
+
+    parser.add_argument(
+        "--timeout",
+        required = False,
+        type     = int,
+        action   = "store",
+        dest     = "timeout",
+        metavar  = "TIMEOUT",
+        help     = "server shutdown timeout in seconds"
+    )
+
     return parser.parse_args()
 
 def main():
-    opts, args = parseargs()
-
-    config = Config(opts.config)
+    args   = parseargs()
+    config = Config(args.config)
     log    = logging.getLogger("mctl")
 
     logging.basicConfig(format = "[%(levelname)s] %(message)s")
@@ -149,7 +174,7 @@ def main():
     server  = None
     package = None
 
-    if opts.list:
+    if args.list:
         servers = config.servers_get()
         servers = servers.keys()
 
@@ -159,23 +184,21 @@ def main():
         print "Server(s): %s" % (string.join(servers, ", "))
         return 0
 
-    if not opts.server:
-        parser.error("option -s, --server is required")
+    if not config.server_exists(args.server):
+        log.error("%s: invalid server name", args.server)
+        return 1
 
-    if not config.server_exists(opts.server):
-        parser.error("option -s, --server requires a valid server")
+    server = config.server_get(args.server)
 
-    server = config.server_get(opts.server)
+    if args.timeout:
+        server['timeout'] = int(args.timeout)
 
-    if opts.timeout:
-        server['timeout'] = int(opts.timeout)
+    config.server_set(args.server, server)
+    server = Server(args.server, server)
 
-    config.server_set(opts.server, server)
-    server = Server(opts.server, server)
-
-    if opts.dryrun:
-        if opts.upgrade:
-            server.upgrade(config, opts.force, opts.include, opts.exclude, True)
+    if args.dryrun:
+        if args.upgrade:
+            server.upgrade(config, args.force, args.include, args.exclude, True)
         return 0
 
     lfh = os.path.join(server.path, "mctl.log")
@@ -190,20 +213,20 @@ def main():
     rcd = log.makeRecord(log.name, logging.INFO, None, 0, msg, None, None)
     lfh.emit(rcd)
 
-    if opts.restart:
-        opts.stop = opts.start = True
+    if args.restart:
+        args.stop = args.start = True
 
-    if opts.stop:
-        server.stop(opts.message)
+    if args.stop:
+        server.stop(args.message)
 
-    if opts.upgrade:
-        server.upgrade(config, opts.force, opts.include, opts.exclude, False)
+    if args.upgrade:
+        server.upgrade(config, args.force, args.include, args.exclude, False)
 
-    if opts.start:
-        server.start(opts.force)
+    if args.start:
+        server.start(args.force)
 
-    if opts.command:
-        server.command(opts.command)
+    if args.command:
+        server.command(args.command)
 
     lfh.stream.write(os.linesep)
     lfh.close()
