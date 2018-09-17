@@ -12,18 +12,7 @@
 # The above copyright notice and this permission notice shall be included in
 # all copies or substantial portions of the Software.
 
-from setuptools import setup
+from mctl.commands import cli
 
-setup(
-    name="mctl",
-    version="2.0.0",
-    url="https://github.com/jgeboski/mctl",
-    author="James Geboski",
-    author_email="jgeboski@gmail.com",
-    license="MIT",
-    description="Script for managing Minecraft servers",
-    packages=["mctl"],
-    install_requires=["Click"],
-    python_requires=">=3.6",
-    entry_points={"console_scripts": ["mctl = mctl.commands:main"]},
-)
+if __name__ == "__main__":
+    cli()

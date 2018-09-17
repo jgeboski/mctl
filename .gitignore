@@ -1,3 +1,4 @@
-*.pyc
-*.pyo
+*.egg-info
+__pycache__
+.mypy_cache
 build
