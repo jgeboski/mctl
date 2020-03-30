@@ -24,6 +24,6 @@ setup(
     description="Script for managing Minecraft servers",
     packages=["mctl"],
     install_requires=["Click", "PyYAML"],
-    python_requires=">=3.6",
+    python_requires=">=3.7",
     entry_points={"console_scripts": ["mctl = mctl.commands:main"]},
 )

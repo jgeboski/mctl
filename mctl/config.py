@@ -193,6 +193,10 @@ class Config(ConfigObject):
             for package_name in server.packages:
                 massert(package_name in self.packages, f"Undefined package: {package}")
 
+    def get_server(self, name: str) -> Server:
+        massert(name in self.servers, f"Undefined server: {name}")
+        return self.servers[name]
+
 
 def load_config(config_file: IO[str]):
     config_dict = yaml.load(config_file)

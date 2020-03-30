@@ -12,12 +12,14 @@
 # The above copyright notice and this permission notice shall be included in
 # all copies or substantial portions of the Software.
 
+import asyncio
 import click
 import logging
 import os
-from typing import IO
+from typing import IO, List, Optional
 
 from mctl.config import Config, load_config
+from mctl.server import server_execute, server_start, server_stop
 
 
 @click.group(help="Minecraft server controller")
@@ -48,9 +50,18 @@ def build(config: Config) -> None:
 
 
 @cli.command(help="Execute an arbitrary server command")
+@click.argument("command", nargs=-1, envvar="COMMAND", required=True)
+@click.option(
+    "--server-name",
+    "-s",
+    help="Name of the server to act on",
+    envvar="SERVER",
+    required=True,
+)
 @click.pass_obj
-def execute(config: Config) -> None:
-    pass
+def execute(config: Config, command: List[str], server_name: str) -> None:
+    server = config.get_server(server_name)
+    asyncio.run(server_execute(server, " ".join(command)))
 
 
 @cli.command(help="List all packages")
@@ -80,9 +91,21 @@ def packages(config: Config) -> None:
 
 
 @cli.command(help="Restart a server")
+@click.option(
+    "--message", "-m", help="Restart message show to players", envvar="MESSAGE",
+)
+@click.option(
+    "--server-name",
+    "-s",
+    help="Name of the server to act on",
+    envvar="SERVER",
+    required=True,
+)
 @click.pass_obj
-def restart(config: Config) -> None:
-    pass
+def restart(config: Config, message: Optional[str], server_name: str) -> None:
+    server = config.get_server(server_name)
+    asyncio.run(server_stop(server, message))
+    asyncio.run(server_start(server))
 
 
 @cli.command(help="List all servers")
@@ -102,15 +125,34 @@ def servers(config: Config) -> None:
 
 
 @cli.command(help="Start a server")
+@click.option(
+    "--server-name",
+    "-s",
+    help="Name of the server to act on",
+    envvar="SERVER",
+    required=True,
+)
 @click.pass_obj
-def start(config: Config) -> None:
-    pass
+def start(config: Config, server_name: str) -> None:
+    server = config.get_server(server_name)
+    asyncio.run(server_start(server))
 
 
 @cli.command(help="Stop a server")
+@click.option(
+    "--message", "-m", help="Shutdown message show to players", envvar="MESSAGE",
+)
+@click.option(
+    "--server-name",
+    "-s",
+    help="Name of the server to act on",
+    envvar="SERVER",
+    required=True,
+)
 @click.pass_obj
-def stop(config: Config) -> None:
-    pass
+def stop(config: Config, message: Optional[str], server_name: str) -> None:
+    server = config.get_server(server_name)
+    asyncio.run(server_stop(server, message))
 
 
 @cli.command(help="Upgrade one or more packages")
