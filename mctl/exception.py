@@ -12,18 +12,17 @@
 # The above copyright notice and this permission notice shall be included in
 # all copies or substantial portions of the Software.
 
-from setuptools import setup
+from typing import Any
 
-setup(
-    name="mctl",
-    version="2.0.0",
-    url="https://github.com/jgeboski/mctl",
-    author="James Geboski",
-    author_email="jgeboski@gmail.com",
-    license="MIT",
-    description="Script for managing Minecraft servers",
-    packages=["mctl"],
-    install_requires=["Click", "PyYAML"],
-    python_requires=">=3.6",
-    entry_points={"console_scripts": ["mctl = mctl.commands:main"]},
-)
+
+class MctlError(Exception):
+    pass
+
+
+class MctlAssertionError(MctlError):
+    pass
+
+
+def massert(condition: Any, message: str) -> None:
+    if not condition:
+        raise MctlAssertionError(message)

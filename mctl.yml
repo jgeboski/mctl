@@ -1,0 +1,68 @@
+# Absolutely root build path for packages
+build-path: /home/minecraft/.mctl-builds
+# Nice level to use for compilation processes
+build-niceness: 15
+# The maximum number of package versions to store before pruning
+max-package-versions: 5
+
+# Map of servers for mctl to manage
+servers:
+  example:
+    # Absolute root path for the server
+    path: /home/minecraft/example
+    # Command used to start the server in GNU screen.
+    command: java -Xmx1G -server -jar spigot.jar
+    # Timeout (in seconds) to wait before stopping the server. A server
+    # message will be printed every 5 seconds before the server is
+    # stopped. Disable this feature by setting the value to 0.
+    stop-timeout: 60
+    # List of packages used by the server
+    packages:
+      - Spigot
+      - dynmap
+      - LogBlock
+
+# Map of packages referenced by the servers
+packages:
+  Spigot:
+    # List of files to fetch
+    fetch-urls:
+      - https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar
+
+    # List of build commands to serially execute in order
+    build-commands:
+      - java -jar BuildTools.jar --rev 1.15.2
+
+    # List of artifacts to archive and install
+    artifacts:
+      # Key is the path relevative to the server root path. The key is
+      # the pattern to match reletive to the build root path.
+      spigot.jar: spigot\-[\.0-9]+\.jar
+
+  dynmap:
+    # Repository for the package source
+    repo:
+      # URL of the repository
+      url: https://github.com/webbukkit/dynmap.git
+      # Type of the repository (currently only git is supported)
+      type: git
+      # Branch to work on within the repository
+      branch: v3.0
+
+    build-commands:
+      - ./gradlew clean build
+
+    artifacts:
+      plugins/dynmap.jar: target/Dynmap\-[\.0-9]+\-SNAPSHOT\-spigot\.jar
+
+  LogBlock:
+    repo:
+      url: https://github.com/LogBlock/LogBlock.git
+      type: git
+      branch: master
+
+    build-commands:
+      - mvn clean package
+
+    artifacts:
+      plugins/LogBlock.jar: target/LogBlock.jar

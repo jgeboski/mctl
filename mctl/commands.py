@@ -13,10 +13,11 @@
 # all copies or substantial portions of the Software.
 
 import click
-import io
 import logging
 import os
 from typing import IO
+
+from mctl.config import Config, load_config
 
 
 @click.group(help="Minecraft server controller")
@@ -31,48 +32,88 @@ from typing import IO
 @click.option(
     "--debug", "-d", help="Show debugging messages", is_flag=True,
 )
-def cli(config_file: IO[str], debug: bool) -> None:
+@click.pass_context
+def cli(ctx: click.Context, config_file: IO[str], debug: bool) -> None:
     logging.basicConfig(
         format="[%(asctime)s] [%(levelname)s] %(message)s",
         level=logging.DEBUG if debug else logging.INFO,
     )
+    ctx.obj = load_config(config_file)
 
 
 @cli.command(help="Build one or more packages")
-def build() -> None:
+@click.pass_obj
+def build(config: Config) -> None:
     pass
 
 
 @cli.command(help="Execute an arbitrary server command")
-def execute() -> None:
+@click.pass_obj
+def execute(config: Config) -> None:
     pass
 
 
 @cli.command(help="List all packages")
-def packages() -> None:
-    pass
+@click.pass_obj
+def packages(config: Config) -> None:
+    for package in config.packages.values():
+        click.echo(f"{package.name}:")
+        if package.repo:
+            click.echo(f"  Repo URL: {package.repo.url}")
+            click.echo(f"  Repo Type: {package.repo.type}")
+            click.echo(f"  Repo Branch: {package.repo.branch}")
+
+        if package.fetch_urls:
+            click.echo(f"  Fetch URLs:")
+            for url in package.fetch_urls:
+                click.echo(f"    - {url}")
+
+        click.echo(f"  Build Commands:")
+        for command in package.build_commands:
+            click.echo(f"    - {command}")
+
+        click.echo(f"  Artifacts:")
+        for name, regex in package.artifacts.items():
+            click.echo(f"    - {regex} -> {name}")
+
+        click.echo("")
 
 
 @cli.command(help="Restart a server")
-def restart() -> None:
+@click.pass_obj
+def restart(config: Config) -> None:
     pass
 
 
 @cli.command(help="List all servers")
-def servers() -> None:
-    pass
+@click.pass_obj
+def servers(config: Config) -> None:
+    for server in config.servers.values():
+        click.echo(f"{server.name}:")
+        click.echo(f"  Path: {server.path}")
+        click.echo(f"  Command: {server.command}")
+        click.echo(f"  Stop Timeout: {server.stop_timeout}")
+        click.echo(f"  Packages:")
+
+        for package in server.packages:
+            click.echo(f"    - {package}")
+
+        click.echo("")
 
 
 @cli.command(help="Start a server")
-def start() -> None:
+@click.pass_obj
+def start(config: Config) -> None:
     pass
 
 
 @cli.command(help="Stop a server")
-def stop() -> None:
+@click.pass_obj
+def stop(config: Config) -> None:
     pass
 
 
 @cli.command(help="Upgrade one or more packages")
-def upgrade() -> None:
+@click.pass_obj
+def upgrade(config: Config) -> None:
     pass
