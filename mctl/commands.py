@@ -16,10 +16,19 @@ import asyncio
 import click
 import logging
 import os
+import time
 from typing import IO, List, Optional
 
 from mctl.config import Config, load_config
+from mctl.package import (
+    package_build,
+    package_revisions,
+    package_upgrade,
+    sort_revisions_n2o,
+)
 from mctl.server import server_execute, server_start, server_stop
+
+LOG = logging.getLogger(__name__)
 
 
 @click.group(help="Minecraft server controller")
@@ -44,9 +53,43 @@ def cli(ctx: click.Context, config_file: IO[str], debug: bool) -> None:
 
 
 @cli.command(help="Build one or more packages")
+@click.option(
+    "--all-packages", "-a", help="Act on all packages", is_flag=True,
+)
+@click.option(
+    "--force",
+    "-f",
+    help="Force packages to build even if the revision already exists",
+    is_flag=True,
+)
+@click.option(
+    "--package-name",
+    "-p",
+    help="Name(s) of the package to act on",
+    envvar="PACKAGE",
+    multiple=True,
+)
 @click.pass_obj
-def build(config: Config) -> None:
-    pass
+def build(
+    config: Config, all_packages: bool, force: bool, package_name: List[str]
+) -> None:
+    if all_packages:
+        packages = list(config.packages.values())
+    elif package_name:
+        packages = [config.get_package(name) for name in package_name]
+    else:
+        raise click.UsageError("--all-packages or --package-name required")
+
+    # Rather than re-nicing all of the subprocesses for building, just
+    # re-nice everything at a top-level (including mctl).
+    if hasattr(os, "nice"):
+        new_nice = os.nice(config.build_niceness)  # type: ignore
+        LOG.debug("Set niceness to %s for building", new_nice)
+    else:
+        LOG.debug("Re-nicing not supported by this OS")
+
+    for package in packages:
+        asyncio.run(package_build(config, package, force))
 
 
 @cli.command(help="Execute an arbitrary server command")
@@ -86,6 +129,12 @@ def packages(config: Config) -> None:
         click.echo(f"  Artifacts:")
         for name, regex in package.artifacts.items():
             click.echo(f"    - {regex} -> {name}")
+
+        revs = package_revisions(config, package)
+        if revs:
+            click.secho("  Built Revisions:")
+            for rev, ts in sort_revisions_n2o(revs):
+                click.secho(f"    - {rev} ({time.ctime(ts)})")
 
         click.echo("")
 
@@ -156,6 +205,54 @@ def stop(config: Config, message: Optional[str], server_name: str) -> None:
 
 
 @cli.command(help="Upgrade one or more packages")
+@click.option(
+    "--all-packages", "-a", help="Act on all packages", is_flag=True,
+)
+@click.option(
+    "--force",
+    "-f",
+    help="Force packages to upgrade even if they are up-to-date",
+    is_flag=True,
+)
+@click.option(
+    "--package-name",
+    "-p",
+    help="Name(s) of the package to act on",
+    envvar="PACKAGE",
+    multiple=True,
+)
+@click.option(
+    "--revision",
+    "-n",
+    help="Revision (or version) of the package to upgrade or downgrade to",
+    envvar="REV",
+)
+@click.option(
+    "--server-name",
+    "-s",
+    help="Name of the server to act on",
+    envvar="SERVER",
+    required=True,
+)
 @click.pass_obj
-def upgrade(config: Config) -> None:
-    pass
+def upgrade(
+    config: Config,
+    all_packages: bool,
+    force: bool,
+    package_name: List[str],
+    revision: Optional[str],
+    server_name: str,
+) -> None:
+    if (all_packages or len(package_name) > 1) and revision:
+        raise click.UsageError("Only a single package can be used with --revision")
+
+    if all_packages:
+        packages = list(config.packages.values())
+    elif package_name:
+        packages = [config.get_package(name) for name in package_name]
+    else:
+        raise click.UsageError("--all-packages or --package-name required")
+
+    server = config.get_server(server_name)
+    for package in packages:
+        asyncio.run(package_upgrade(config, server, package, revision, force))

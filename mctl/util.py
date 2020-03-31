@@ -12,32 +12,90 @@
 # The above copyright notice and this permission notice shall be included in
 # all copies or substantial portions of the Software.
 
+import aiofiles
+import aiohttp
 import asyncio
 import logging
+import os
 from typing import Any, Dict
+from urllib.parse import urlparse
 
 from mctl.exception import massert, MctlError
 
 LOG = logging.getLogger(__name__)
 
 
+async def download_url(url: str, directory: str) -> None:
+    parsed_url = urlparse(url)
+    file_name = os.path.basename(parsed_url.path)
+    path = os.path.join(directory, file_name)
+    LOG.info(f"Downloading %s to %s", file_name, path)
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as res, aiofiles.open(path, mode="wb") as fp:
+            massert(
+                res.status == 200, f"Failed to download {file_name}: HTTP {res.status}"
+            )
+
+            while True:
+                data = await res.content.read(1024)
+                if not data:
+                    break
+
+                await fp.write(data)
+
+    LOG.info("Downloaded %s to %s", file_name, directory)
+
+
 async def execute_shell_check(
-    command: str, throw_on_error: bool = True, **kwargs: Any
+    command: str, throw_on_error: bool = True, hide_ouput=True, **kwargs: Any
 ) -> str:
     LOG.debug("Executing shell command: %s", command)
+    output_type = asyncio.subprocess.PIPE if hide_ouput else None
     proc = await asyncio.create_subprocess_shell(
-        command,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE,
-        **kwargs,
+        command, stdout=output_type, stderr=output_type, **kwargs,
     )
-    stdout, stderr = await proc.communicate()
-    LOG.debug("Stdout: %s", stdout.decode("utf-8"))
-    LOG.debug("Stderr: %s", stderr.decode("utf-8"))
+
+    if hide_ouput:
+        stdout, stderr = await proc.communicate()
+        output = stdout.decode("utf-8")
+        LOG.debug("Stdout: %s", output)
+        LOG.debug("Stderr: %s", stderr.decode("utf-8"))
+    else:
+        await proc.wait()
+        output = ""
 
     massert(
         not throw_on_error or proc.returncode == 0,
         f"Failed to execute shell command: {command}",
     )
     LOG.debug("Successfully executed shell command: %s", command)
-    return stdout.decode("utf-8")
+    return output
+
+
+def get_rel_dir_files(directory: str):
+    return [
+        os.path.relpath(os.path.join(root, f), directory)
+        for root, _, files in os.walk(directory)
+        for f in files
+    ]
+
+
+async def git_clone_or_pull(repo_dir: str, url: str, branch: str = "master") -> None:
+    git_path = os.path.join(repo_dir, ".git")
+    if os.path.exists(git_path):
+        LOG.debug("Updating existing Git repo %s", repo_dir)
+        await execute_shell_check("git clean -dfx", cwd=repo_dir)
+        await execute_shell_check("git pull", cwd=repo_dir)
+    else:
+        LOG.debug("Cloning new Git repo %s", repo_dir)
+        await execute_shell_check(f"git clone '{url}' '{repo_dir}'")
+
+    LOG.debug("Updating to Git repo %s to branch %s", repo_dir, branch)
+    await execute_shell_check(f"git checkout {branch}", cwd=repo_dir)
+
+
+async def git_rev(repo_dir: str) -> str:
+    rev = await execute_shell_check("git rev-parse --short HEAD", cwd=repo_dir)
+    rev = rev.strip()
+    LOG.debug("Got git revision %s for repo %s", rev, repo_dir)
+    return rev

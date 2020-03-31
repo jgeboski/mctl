@@ -23,7 +23,7 @@ setup(
     license="MIT",
     description="Script for managing Minecraft servers",
     packages=["mctl"],
-    install_requires=["Click", "PyYAML"],
+    install_requires=["aiofiles", "aiohttp", "Click", "PyYAML"],
     python_requires=">=3.7",
     entry_points={"console_scripts": ["mctl = mctl.commands:main"]},
 )

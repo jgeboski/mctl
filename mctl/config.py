@@ -131,6 +131,7 @@ class Package(ConfigObject):
             self.artifacts[path] = pattern
 
     def validate(self) -> None:
+        massert(self.name != ".archive", f"Package cannot be named .archive")
         massert(
             self.repo or self.fetch_urls,
             f"Package {self.name} missing repo or fetch URLs",
@@ -192,6 +193,10 @@ class Config(ConfigObject):
             server.validate()
             for package_name in server.packages:
                 massert(package_name in self.packages, f"Undefined package: {package}")
+
+    def get_package(self, name: str) -> Package:
+        massert(name in self.packages, f"Undefined package: {name}")
+        return self.packages[name]
 
     def get_server(self, name: str) -> Server:
         massert(name in self.servers, f"Undefined server: {name}")
