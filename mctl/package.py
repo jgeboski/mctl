@@ -14,6 +14,7 @@
 
 import asyncio
 from collections import defaultdict
+import hashlib
 import logging
 import os
 import re
@@ -25,8 +26,10 @@ from mctl.exception import massert
 from mctl.util import (
     download_url,
     execute_shell_check,
+    find_git_repos,
     get_rel_dir_files,
     git_clone_or_pull,
+    git_pull_working_branch,
     git_rev,
 )
 
@@ -58,6 +61,34 @@ def archive_build(config: Config, package: Package, build_dir: str, rev: str) ->
         os.rename(artifact_path, archive_path)
 
 
+async def combined_git_rev(build_dir: str) -> Optional[str]:
+    git_repos = find_git_repos(build_dir)
+    LOG.debug("Found %d Git repos in %s: %s", len(git_repos), build_dir, git_repos)
+    if len(git_repos) == 0:
+        return None
+
+    if len(git_repos) == 1:
+        rev = await git_rev(git_repos[0])
+        LOG.debug("Using the short hash, %s, for the revision in %s", rev, build_dir)
+        return rev
+
+    revs = await asyncio.gather(*[git_rev(repo_dir) for repo_dir in git_repos])
+    md5 = hashlib.md5()
+    md5.update(":".join(revs).encode("utf-8"))
+    hashed = md5.hexdigest()
+    rev = hashed[:7]
+    LOG.debug(
+        "Using the MD5 of all short hashes, %s, for the revision in %s", rev, build_dir
+    )
+    return rev
+
+
+async def combined_git_pull(build_dir: str) -> None:
+    git_repos = find_git_repos(build_dir)
+    LOG.debug("Updating %d all Git repos in %s: ", len(git_repos), build_dir, git_repos)
+    await asyncio.gather(*[git_pull_working_branch(repo_dir) for repo_dir in git_repos])
+
+
 async def package_build(config: Config, package: Package, force: bool = False) -> None:
     LOG.info("Building package %s", package.name)
     build_dir = os.path.join(config.build_path, package.name)
@@ -66,14 +97,12 @@ async def package_build(config: Config, package: Package, force: bool = False) -
     if package.repo and package.repo.type == "git":
         LOG.info("Updating Git repo for package %s", package.name)
         await git_clone_or_pull(build_dir, package.repo.url, package.repo.branch)
-        rev = await git_rev(build_dir)
-    else:
-        rev = str(int(time.time()))
 
+    rev = await combined_git_rev(build_dir)
     prev_revs = package_revisions(config, package)
-    if not force and rev in prev_revs:
+    if not force and rev is not None and rev in prev_revs:
         LOG.info(
-            "Build of package %s already exist for revision %s, skipping",
+            "Build of package %s already exists for revision %s, skipping",
             package.name,
             rev,
         )
@@ -91,6 +120,16 @@ async def package_build(config: Config, package: Package, force: bool = False) -
     for i, command in enumerate(package.build_commands, 1):
         LOG.info("Executing build command %d of %d: %s", i, cmd_count, command)
         await execute_shell_check(command, hide_ouput=False, cwd=build_dir)
+
+    # Attempt to get an updated revision from all git repos after all
+    # build commands have executed. This helps support packages that use
+    # scripts to fetch Git repos (ex: Spigot's BuildTools). The build
+    # process will update these repos twice. Once up above to make sure
+    # the same revision is not being rebuilt. And once here to make sure
+    # the revision is accurate.
+    rev = await combined_git_rev(build_dir)
+    if rev is None:
+        rev = str(int(time.time()))
 
     archive_build(config, package, build_dir, rev)
 

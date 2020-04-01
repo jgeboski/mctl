@@ -17,7 +17,7 @@ import aiohttp
 import asyncio
 import logging
 import os
-from typing import Any, Dict
+from typing import Any, Dict, List, Optional
 from urllib.parse import urlparse
 
 from mctl.exception import massert, MctlError
@@ -47,12 +47,19 @@ async def download_url(url: str, directory: str) -> None:
 
 
 async def execute_shell_check(
-    command: str, throw_on_error: bool = True, hide_ouput=True, **kwargs: Any
+    command: str,
+    throw_on_error: bool = True,
+    hide_ouput=True,
+    cwd: Optional[str] = None,
+    **kwargs: Any,
 ) -> str:
-    LOG.debug("Executing shell command: %s", command)
+    if cwd is None:
+        cwd = os.getcwd()
+
+    LOG.debug("Executing shell command: '%s' in %s", command, cwd)
     output_type = asyncio.subprocess.PIPE if hide_ouput else None
     proc = await asyncio.create_subprocess_shell(
-        command, stdout=output_type, stderr=output_type, **kwargs,
+        command, stdout=output_type, stderr=output_type, cwd=cwd, **kwargs,
     )
 
     if hide_ouput:
@@ -66,10 +73,27 @@ async def execute_shell_check(
 
     massert(
         not throw_on_error or proc.returncode == 0,
-        f"Failed to execute shell command: {command}",
+        f"Failed to execute shell command: '{command}' in {cwd}",
     )
-    LOG.debug("Successfully executed shell command: %s", command)
+    LOG.debug("Successfully executed shell command: '%s' in %s", command, cwd)
     return output
+
+
+def find_git_repos(base_dir: str) -> List[str]:
+    git_repos = set()
+    for git_repo, dir_names, _ in os.walk(base_dir):
+        if ".git" not in dir_names:
+            continue
+
+        parent_dir = os.path.dirname(git_repo)
+        if parent_dir and parent_dir in git_repos:
+            LOG.debug("Ignoring sub Git repo %s", _)
+            continue
+
+        git_repos.add(git_repo)
+
+    LOG.debug("Found %d Git repos in %s: %s", len(git_repos), base_dir, git_repos)
+    return sorted(git_repos)
 
 
 def get_rel_dir_files(directory: str):
@@ -92,6 +116,12 @@ async def git_clone_or_pull(repo_dir: str, url: str, branch: str = "master") -> 
 
     LOG.debug("Updating to Git repo %s to branch %s", repo_dir, branch)
     await execute_shell_check(f"git checkout {branch}", cwd=repo_dir)
+
+
+async def git_pull_working_branch(repo_dir: str) -> None:
+    LOG.debug("Updating Git repo %s on existing branch", repo_dir)
+    await execute_shell_check("git clean -dfx", cwd=repo_dir)
+    await execute_shell_check("git pull", cwd=repo_dir)
 
 
 async def git_rev(repo_dir: str) -> str:
