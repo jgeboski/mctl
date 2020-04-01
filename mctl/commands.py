@@ -119,8 +119,8 @@ def packages(config: Config) -> None:
 
         if package.fetch_urls:
             click.echo(f"  Fetch URLs:")
-            for url in package.fetch_urls:
-                click.echo(f"    - {url}")
+            for path, url in package.fetch_urls.items():
+                click.echo(f"    - {path}: {url}")
 
         click.echo(f"  Build Commands:")
         for command in package.build_commands:

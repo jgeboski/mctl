@@ -113,7 +113,10 @@ async def package_build(config: Config, package: Package, force: bool = False) -
             "Fetching %d URLs for package %s...", len(package.fetch_urls), package.name
         )
         await asyncio.gather(
-            *[download_url(url, build_dir) for url in package.fetch_urls]
+            *[
+                download_url(url, os.path.join(build_dir, path))
+                for path, url in package.fetch_urls.items()
+            ]
         )
 
     cmd_count = len(package.build_commands)

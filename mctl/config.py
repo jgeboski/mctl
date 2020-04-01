@@ -114,7 +114,7 @@ class Package(ConfigObject):
         super().__init__(config_dict)
         self.name = name
         self.repo: Optional[Repo] = None
-        self.fetch_urls = self.get_str_list("fetch-urls", [])
+        self.fetch_urls = self.get_dict("fetch-urls", {})
         self.build_commands = self.get_str_list("build-commands")
         self.artifacts: Dict[str, re.Pattern] = {}
 

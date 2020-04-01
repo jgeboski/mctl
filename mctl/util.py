@@ -18,24 +18,18 @@ import asyncio
 import logging
 import os
 from typing import Any, Dict, List, Optional
-from urllib.parse import urlparse
 
 from mctl.exception import massert, MctlError
 
 LOG = logging.getLogger(__name__)
 
 
-async def download_url(url: str, directory: str) -> None:
-    parsed_url = urlparse(url)
-    file_name = os.path.basename(parsed_url.path)
-    path = os.path.join(directory, file_name)
-    LOG.info(f"Downloading %s to %s", file_name, path)
+async def download_url(url: str, dest_path: str) -> None:
+    LOG.info(f"Downloading %s to %s", url, dest_path)
+    os.makedirs(os.path.basename(dest_path), exist_ok=True)
     async with aiohttp.ClientSession() as session:
-        async with session.get(url) as res, aiofiles.open(path, mode="wb") as fp:
-            massert(
-                res.status == 200, f"Failed to download {file_name}: HTTP {res.status}"
-            )
-
+        async with session.get(url) as res, aiofiles.open(dest_path, mode="wb") as fp:
+            massert(res.status == 200, f"Failed to download {url}: HTTP {res.status}")
             while True:
                 data = await res.content.read(1024)
                 if not data:
@@ -43,7 +37,7 @@ async def download_url(url: str, directory: str) -> None:
 
                 await fp.write(data)
 
-    LOG.info("Downloaded %s to %s", file_name, directory)
+    LOG.info("Downloaded %s to %s", url, dest_path)
 
 
 async def execute_shell_check(
