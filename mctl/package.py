@@ -63,7 +63,9 @@ def archive_build(config: Config, package: Package, build_dir: str, rev: str) ->
 
 async def combined_git_rev(build_dir: str) -> Optional[str]:
     git_repos = find_git_repos(build_dir)
-    LOG.debug("Found %d Git repos in %s: %s", len(git_repos), build_dir, git_repos)
+    LOG.debug(
+        "Found %d Git repositories in %s: %s", len(git_repos), build_dir, git_repos
+    )
     if len(git_repos) == 0:
         return None
 
@@ -85,7 +87,9 @@ async def combined_git_rev(build_dir: str) -> Optional[str]:
 
 async def combined_git_pull(build_dir: str) -> None:
     git_repos = find_git_repos(build_dir)
-    LOG.debug("Updating %d all Git repos in %s: ", len(git_repos), build_dir, git_repos)
+    LOG.debug(
+        "Updating %d all Git repositories in %s: ", len(git_repos), build_dir, git_repos
+    )
     await asyncio.gather(*[git_pull_working_branch(repo_dir) for repo_dir in git_repos])
 
 
@@ -94,10 +98,13 @@ async def package_build(config: Config, package: Package, force: bool = False) -
     build_dir = os.path.join(config.build_path, package.name)
     os.makedirs(build_dir, exist_ok=True)
 
-    if package.repo and package.repo.type == "git":
-        LOG.info("Updating Git repo for package %s", package.name)
-        await git_clone_or_pull(build_dir, package.repo.url, package.repo.branch)
+    repo_update_coros = []
+    for repo in package.repositories.values():
+        repo_dir = os.path.join(build_dir, repo.name)
+        if repo.type == "git":
+            repo_update_coros.append(git_clone_or_pull(repo_dir, repo.url, repo.branch))
 
+    await asyncio.gather(*repo_update_coros)
     rev = await combined_git_rev(build_dir)
     prev_revs = package_revisions(config, package)
     if not force and rev is not None and rev in prev_revs:

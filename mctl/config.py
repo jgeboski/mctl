@@ -98,29 +98,32 @@ class ConfigObject(ABC):
         return value
 
 
-class Repo(ConfigObject):
-    def __init__(self, config_dict: Dict[str, Any]) -> None:
+class Repository(ConfigObject):
+    def __init__(self, config_dict: Dict[str, Any], name: str) -> None:
         super().__init__(config_dict)
+        self.name = name
         self.url = self.get_str("url")
         self.type = self.get_str("type").lower()
         self.branch = self.get_str("branch")
 
     def validate(self) -> None:
-        massert(self.type == "git", f"Unsupported repo type: {self.type}")
+        massert(
+            self.type == "git",
+            f"Unsupported repository type {self.type} for repo {self.name}",
+        )
 
 
 class Package(ConfigObject):
     def __init__(self, config_dict: Dict[str, Any], name: str) -> None:
         super().__init__(config_dict)
         self.name = name
-        self.repo: Optional[Repo] = None
+        self.repositories = {
+            name: Repository(repo, name)
+            for name, repo in self.get_dict("repositories", {}).items()
+        }
         self.fetch_urls = self.get_dict("fetch-urls", {})
         self.build_commands = self.get_str_list("build-commands")
         self.artifacts: Dict[str, re.Pattern] = {}
-
-        repo = self.get_dict("repo", {})
-        if repo:
-            self.repo = Repo(repo)
 
         for path, regex in self.get_dict("artifacts").items():
             if not regex.endswith("$"):
@@ -136,13 +139,14 @@ class Package(ConfigObject):
     def validate(self) -> None:
         massert(self.name != ".archive", f"Package cannot be named .archive")
         massert(
-            self.repo or self.fetch_urls,
-            f"Package {self.name} missing repo or fetch URLs",
+            self.repositories or self.fetch_urls,
+            f"Package {self.name} missing repositories or fetch URLs",
         )
         massert(self.build_commands, f"Package {self.name} missing build commands")
         massert(self.artifacts, f"Package {self.name} missing artifacts")
-        if self.repo is not None:
-            self.repo.validate()
+
+        for repo in self.repositories.values():
+            repo.validate()
 
 
 class Server(ConfigObject):

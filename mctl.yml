@@ -41,28 +41,30 @@ packages:
 
   dynmap:
     # Repository for the package source
-    repo:
-      # URL of the repository
-      url: https://github.com/webbukkit/dynmap.git
-      # Type of the repository (currently only git is supported)
-      type: git
-      # Branch to work on within the repository
-      branch: v3.0
+    repositories:
+      dynmap:
+        # URL of the repository
+        url: https://github.com/webbukkit/dynmap.git
+        # Type of the repository (currently only git is supported)
+        type: git
+        # Branch to work on within the repository
+        branch: v3.0
 
     build-commands:
-      - ./gradlew clean build
+      - ./dynmap/gradlew clean build
 
     artifacts:
-      plugins/dynmap.jar: target/Dynmap\-[\.0-9]+\-SNAPSHOT\-spigot\.jar
+      plugins/dynmap.jar: dynmap/target/Dynmap\-[\.0-9]+\-SNAPSHOT\-spigot\.jar
 
   LogBlock:
     repo:
-      url: https://github.com/LogBlock/LogBlock.git
-      type: git
-      branch: master
+      LogBlock:
+        url: https://github.com/LogBlock/LogBlock.git
+        type: git
+        branch: master
 
     build-commands:
-      - mvn clean package
+      - mvn -f LogBlock clean package
 
     artifacts:
-      plugins/LogBlock.jar: target/LogBlock.jar
+      plugins/LogBlock.jar: LogBlock/target/LogBlock.jar

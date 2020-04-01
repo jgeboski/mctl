@@ -112,10 +112,12 @@ def execute(config: Config, command: List[str], server_name: str) -> None:
 def packages(config: Config) -> None:
     for package in config.packages.values():
         click.echo(f"{package.name}:")
-        if package.repo:
-            click.echo(f"  Repo URL: {package.repo.url}")
-            click.echo(f"  Repo Type: {package.repo.type}")
-            click.echo(f"  Repo Branch: {package.repo.branch}")
+        if package.repositories:
+            click.secho("  Repositories:")
+            for repo in package.repositories.values():
+                click.echo(f"    URL: {repo.url}")
+                click.echo(f"    Type: {repo.type}")
+                click.echo(f"    Branch: {repo.branch}")
 
         if package.fetch_urls:
             click.echo(f"  Fetch URLs:")
