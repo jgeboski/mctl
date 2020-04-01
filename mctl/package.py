@@ -108,7 +108,7 @@ def package_revisions(
 
         root, ext = os.path.splitext(path_tail)
         pattern = re.compile(
-            fr"{re.escape(root)}\-(?P<rev>[a-zA-Z0-9]+){re.escape(ext)}"
+            fr"{re.escape(root)}\-(?P<rev>[a-zA-Z0-9]+){re.escape(ext)}$"
         )
         with os.scandir(base_dir) as dirit:
             for item in dirit:
@@ -165,7 +165,7 @@ async def package_upgrade(
     if os.path.islink(rand_path):
         root, ext = os.path.splitext(os.path.basename(rand_artifact))
         match = re.match(
-            fr"{re.escape(root)}\-(?P<rev>[a-zA-Z0-9]+){re.escape(ext)}",
+            fr"{re.escape(root)}\-(?P<rev>[a-zA-Z0-9]+){re.escape(ext)}$",
             os.path.basename(os.readlink(rand_path)),
         )
         if match:

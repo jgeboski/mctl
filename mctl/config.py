@@ -123,6 +123,9 @@ class Package(ConfigObject):
             self.repo = Repo(repo)
 
         for path, regex in self.get_dict("artifacts").items():
+            if not regex.endswith("$"):
+                regex += "$"
+
             try:
                 pattern = re.compile(regex)
             except Exception:
