@@ -20,13 +20,19 @@ import time
 from typing import IO, List, Optional
 
 from mctl.config import Config, load_config
+from mctl.fake_server import (
+    DEFAULT_MESSAGE,
+    DEFAULT_MOTD,
+    DEFAULT_PORT,
+    run_fake_server,
+)
 from mctl.package import (
     package_build,
     package_revisions,
     package_upgrade,
     sort_revisions_n2o,
 )
-from mctl.server import server_execute, server_start, server_stop
+from mctl.server import server_execute, server_start, server_start_fake, server_stop
 
 LOG = logging.getLogger(__name__)
 
@@ -107,6 +113,43 @@ def execute(config: Config, command: List[str], server_name: str) -> None:
     asyncio.run(server_execute(server, " ".join(command)))
 
 
+@cli.command("fake-server", help="Run the fake server in the foreground")
+@click.option(
+    "--listen-address", "-l", help="IPv4/IPv6 address to listen on", envvar="ADDRESS",
+)
+@click.option(
+    "--icon-file", "-i", help="PNG icon to use", envvar="FILE", type=click.File("rb")
+)
+@click.option(
+    "--message",
+    "-m",
+    help="Message to disconnect players with",
+    envvar="MESSAGE",
+    default=DEFAULT_MESSAGE,
+)
+@click.option(
+    "--motd",
+    "-t",
+    help="Message of the day to display",
+    envvar="MESSAGE",
+    default=DEFAULT_MOTD,
+)
+@click.option(
+    "--port", "-p", help="Port to listen on", envvar="PORT", default=DEFAULT_PORT,
+)
+@click.pass_obj
+def fake_server(
+    config: Config,
+    listen_address: Optional[str],
+    icon_file: Optional[IO[bytes]],
+    message: str,
+    motd: str,
+    port: int,
+) -> None:
+    icon_png_bytes = icon_file.read() if icon_file else None
+    asyncio.run(run_fake_server(listen_address, port, message, motd, icon_png_bytes))
+
+
 @cli.command(help="List all packages")
 @click.pass_obj
 def packages(config: Config) -> None:
@@ -177,6 +220,15 @@ def servers(config: Config) -> None:
 
 @cli.command(help="Start a server")
 @click.option(
+    "--fake", "-k", help="Start the fake server instead", is_flag=True,
+)
+@click.option(
+    "--fake-message",
+    "-m",
+    help="Use this message for the fake server",
+    envvar="MESSAGE",
+)
+@click.option(
     "--server-name",
     "-s",
     help="Name of the server to act on",
@@ -184,9 +236,14 @@ def servers(config: Config) -> None:
     required=True,
 )
 @click.pass_obj
-def start(config: Config, server_name: str) -> None:
+def start(
+    config: Config, fake: bool, fake_message: Optional[str], server_name: str
+) -> None:
     server = config.get_server(server_name)
-    asyncio.run(server_start(server))
+    if fake:
+        asyncio.run(server_start_fake(server, fake_message))
+    else:
+        asyncio.run(server_start(server))
 
 
 @cli.command(help="Stop a server")
@@ -200,10 +257,21 @@ def start(config: Config, server_name: str) -> None:
     envvar="SERVER",
     required=True,
 )
+@click.option(
+    "--start-fake",
+    "-k",
+    help="Start the fake server when the server is stopped",
+    is_flag=True,
+)
 @click.pass_obj
-def stop(config: Config, message: Optional[str], server_name: str) -> None:
+def stop(
+    config: Config, message: Optional[str], server_name: str, start_fake: bool
+) -> None:
     server = config.get_server(server_name)
     asyncio.run(server_stop(server, message))
+
+    if start_fake:
+        asyncio.run(server_start_fake(server, message))
 
 
 @cli.command(help="Upgrade one or more packages")
