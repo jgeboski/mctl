@@ -17,9 +17,10 @@ import click
 import logging
 import os
 import time
-from typing import IO, List, Optional
+from typing import Any, Callable, IO, List, Optional
 
 from mctl.config import Config, load_config
+from mctl.exception import MctlError
 from mctl.fake_server import (
     DEFAULT_MESSAGE,
     DEFAULT_MOTD,
@@ -37,7 +38,24 @@ from mctl.server import server_execute, server_start, server_start_fake, server_
 LOG = logging.getLogger(__name__)
 
 
-@click.group(help="Minecraft server controller")
+class MctlCommand(click.Command):
+    def invoke(self, *args: Any, **kwargs: Any) -> Any:
+        if logging.getLogger().getEffectiveLevel() == logging.DEBUG:
+            return super().invoke(*args, **kwargs)
+
+        try:
+            return super().invoke(*args, **kwargs)
+        except MctlError as ex:
+            raise click.ClickException(str(ex))
+
+
+class MctlRootGroup(click.Group):
+    def command(self, *args: Any, **kwargs: Any) -> Callable:
+        kwargs["cls"] = MctlCommand
+        return super().command(*args, **kwargs)
+
+
+@click.group(help="Minecraft server controller", cls=MctlRootGroup)
 @click.option(
     "--config-file",
     "-c",
