@@ -15,13 +15,22 @@
 import aiofiles
 import aiohttp
 import asyncio
+import functools
 import logging
 import os
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 from mctl.exception import massert, MctlError
 
 LOG = logging.getLogger(__name__)
+
+
+def await_sync(func: Callable) -> Callable:
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        return asyncio.run(func(*args, **kwargs))
+
+    return wrapper
 
 
 async def download_url(url: str, dest_path: str) -> None:

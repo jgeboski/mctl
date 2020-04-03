@@ -12,6 +12,7 @@
 # The above copyright notice and this permission notice shall be included in
 # all copies or substantial portions of the Software.
 
+import aiofiles
 import asyncio
 import copy
 import base64
@@ -184,8 +185,14 @@ async def run_fake_server(
     port: int = DEFAULT_PORT,
     message: str = DEFAULT_MESSAGE,
     motd: str = DEFAULT_MOTD,
-    icon_png_bytes: Optional[bytes] = None,
+    icon_file: Optional[str] = None,
 ) -> None:
+    try:
+        async with aiofiles.open(icon_file, "rb") as fp:
+            icon_png_bytes = await fp.read()
+    except OSError as ex:
+        raise MctlError(f"Failed to read {icon_file}: {ex}")
+
     icon_png_base64 = (
         base64.b64encode(icon_png_bytes) if icon_png_bytes else CAUTION_BASE64
     )

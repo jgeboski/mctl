@@ -12,12 +12,11 @@
 # The above copyright notice and this permission notice shall be included in
 # all copies or substantial portions of the Software.
 
-import asyncio
 import click
 import logging
 import os
 import time
-from typing import Any, Callable, IO, List, Optional
+from typing import Any, Callable, List, Optional
 
 from mctl.config import Config, load_config
 from mctl.exception import MctlError
@@ -34,6 +33,7 @@ from mctl.package import (
     sort_revisions_n2o,
 )
 from mctl.server import server_execute, server_start, server_start_fake, server_stop
+from mctl.util import await_sync
 
 LOG = logging.getLogger(__name__)
 
@@ -61,19 +61,19 @@ class MctlRootGroup(click.Group):
     "-c",
     help="Configuration file to use",
     envvar="FILE",
-    type=click.File(),
     default=os.path.expanduser(os.path.join("~", ".mctl.yml")),
 )
 @click.option(
     "--debug", "-d", help="Show debugging messages", is_flag=True,
 )
 @click.pass_context
-def cli(ctx: click.Context, config_file: IO[str], debug: bool) -> None:
+@await_sync
+async def cli(ctx: click.Context, config_file: str, debug: bool) -> None:
     logging.basicConfig(
         format="[%(asctime)s] [%(levelname)s] %(message)s",
         level=logging.DEBUG if debug else logging.INFO,
     )
-    ctx.obj = load_config(config_file)
+    ctx.obj = await load_config(config_file)
 
 
 @cli.command(help="Build one or more packages")
@@ -94,7 +94,8 @@ def cli(ctx: click.Context, config_file: IO[str], debug: bool) -> None:
     multiple=True,
 )
 @click.pass_obj
-def build(
+@await_sync
+async def build(
     config: Config, all_packages: bool, force: bool, package_name: List[str]
 ) -> None:
     if all_packages:
@@ -113,7 +114,7 @@ def build(
         LOG.debug("Re-nicing not supported by this OS")
 
     for package in packages:
-        asyncio.run(package_build(config, package, force))
+        await package_build(config, package, force)
 
 
 @cli.command(help="Execute an arbitrary server command")
@@ -126,18 +127,17 @@ def build(
     required=True,
 )
 @click.pass_obj
-def execute(config: Config, command: List[str], server_name: str) -> None:
+@await_sync
+async def execute(config: Config, command: List[str], server_name: str) -> None:
     server = config.get_server(server_name)
-    asyncio.run(server_execute(server, " ".join(command)))
+    await server_execute(server, " ".join(command))
 
 
 @cli.command("fake-server", help="Run the fake server in the foreground")
 @click.option(
     "--listen-address", "-l", help="IPv4/IPv6 address to listen on", envvar="ADDRESS",
 )
-@click.option(
-    "--icon-file", "-i", help="PNG icon to use", envvar="FILE", type=click.File("rb")
-)
+@click.option("--icon-file", "-i", help="PNG icon to use", envvar="FILE")
 @click.option(
     "--message",
     "-m",
@@ -156,16 +156,16 @@ def execute(config: Config, command: List[str], server_name: str) -> None:
     "--port", "-p", help="Port to listen on", envvar="PORT", default=DEFAULT_PORT,
 )
 @click.pass_obj
-def fake_server(
+@await_sync
+async def fake_server(
     config: Config,
     listen_address: Optional[str],
-    icon_file: Optional[IO[bytes]],
+    icon_file: Optional[str],
     message: str,
     motd: str,
     port: int,
 ) -> None:
-    icon_png_bytes = icon_file.read() if icon_file else None
-    asyncio.run(run_fake_server(listen_address, port, message, motd, icon_png_bytes))
+    await run_fake_server(listen_address, port, message, motd, icon_file)
 
 
 @cli.command(help="List all packages")
@@ -214,10 +214,11 @@ def packages(config: Config) -> None:
     required=True,
 )
 @click.pass_obj
-def restart(config: Config, message: Optional[str], server_name: str) -> None:
+@await_sync
+async def restart(config: Config, message: Optional[str], server_name: str) -> None:
     server = config.get_server(server_name)
-    asyncio.run(server_stop(server, message))
-    asyncio.run(server_start(server))
+    await server_stop(server, message)
+    await server_start(server)
 
 
 @cli.command(help="List all servers")
@@ -254,14 +255,15 @@ def servers(config: Config) -> None:
     required=True,
 )
 @click.pass_obj
-def start(
+@await_sync
+async def start(
     config: Config, fake: bool, fake_message: Optional[str], server_name: str
 ) -> None:
     server = config.get_server(server_name)
     if fake:
-        asyncio.run(server_start_fake(server, fake_message))
+        await server_start_fake(server, fake_message)
     else:
-        asyncio.run(server_start(server))
+        await server_start(server)
 
 
 @cli.command(help="Stop a server")
@@ -282,14 +284,14 @@ def start(
     is_flag=True,
 )
 @click.pass_obj
-def stop(
+@await_sync
+async def stop(
     config: Config, message: Optional[str], server_name: str, start_fake: bool
 ) -> None:
     server = config.get_server(server_name)
-    asyncio.run(server_stop(server, message))
-
+    await server_stop(server, message)
     if start_fake:
-        asyncio.run(server_start_fake(server, message))
+        await server_start_fake(server, message)
 
 
 @cli.command(help="Upgrade one or more packages")
@@ -323,7 +325,8 @@ def stop(
     required=True,
 )
 @click.pass_obj
-def upgrade(
+@await_sync
+async def upgrade(
     config: Config,
     all_packages: bool,
     force: bool,
@@ -343,4 +346,4 @@ def upgrade(
 
     server = config.get_server(server_name)
     for package in packages:
-        asyncio.run(package_upgrade(config, server, package, revision, force))
+        await package_upgrade(config, server, package, revision, force)

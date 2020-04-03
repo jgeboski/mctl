@@ -13,6 +13,7 @@
 # all copies or substantial portions of the Software.
 
 from abc import ABC, abstractmethod
+import aiofiles
 import os
 import re
 from typing import Any, Dict, IO, List, Mapping, Optional, Union
@@ -210,8 +211,14 @@ class Config(ConfigObject):
         return self.servers[name]
 
 
-def load_config(config_file: IO[str]):
-    config_dict = yaml.load(config_file)
+async def load_config(config_file: str) -> Config:
+    try:
+        async with aiofiles.open(config_file) as fp:
+            config_text = await fp.read()
+    except OSError as ex:
+        raise MctlError(f"Failed to read {config_file}: {ex}")
+
+    config_dict = yaml.load(config_text)
     massert(config_dict, "Empty or missing config")
     config = Config(config_dict)
     config.validate()
