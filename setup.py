@@ -21,7 +21,7 @@ setup(
     author="James Geboski",
     author_email="jgeboski@gmail.com",
     license="MIT",
-    description="Script for managing Minecraft servers",
+    description="Minecraft server controller and plugin manager",
     packages=["mctl"],
     install_requires=["aiofiles", "aiohttp", "Click", "PyYAML"],
     python_requires=">=3.7",
