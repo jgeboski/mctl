@@ -23,7 +23,7 @@ setup(
     license="MIT",
     description="Minecraft server controller and plugin manager",
     packages=["mctl"],
-    install_requires=["aiofiles", "aiohttp", "Click", "PyYAML"],
+    install_requires=["aiofiles", "aiohttp", "click", "pyyaml"],
     python_requires=">=3.7",
-    entry_points={"console_scripts": ["mctl = mctl.commands:main"]},
+    entry_points={"console_scripts": ["mctl = mctl.commands:cli"]},
 )
