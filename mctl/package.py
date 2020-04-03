@@ -61,6 +61,68 @@ def archive_build(config: Config, package: Package, build_dir: str, rev: str) ->
         os.rename(artifact_path, archive_path)
 
 
+def cleanup_builds(config: Config, package: Package) -> None:
+    revs = package_revisions(config, package)
+    LOG.debug("Package %s has %d revisions", package.name, len(revs))
+    removed = set()
+    for rev, _ in reversed(sort_revisions_n2o(revs)):
+        if len(revs) <= config.max_package_revisions:
+            break
+
+        in_use = False
+        for artifact_path, (archive_path, _) in revs[rev].items():
+            for server in config.servers.values():
+                full_path = os.path.join(server.path, artifact_path)
+                if not os.path.islink(full_path):
+                    continue
+
+                link_path = os.readlink(full_path)
+                if os.path.samefile(link_path, archive_path):
+                    LOG.debug(
+                        "Revision %s for package %s still in use by server %s",
+                        rev,
+                        package.name,
+                        server.name,
+                    )
+                    in_use = True
+                    break
+            else:
+                continue
+
+            # The inner for-loop found a link to the artifact, just give up on
+            # removing this revision.
+            break
+
+        if in_use:
+            return
+
+        removed.add(rev)
+        for archive_path, _ in revs[rev].values():
+            LOG.debug(
+                "Removing old build artifact for package %s: %s",
+                package.name,
+                archive_path,
+            )
+            os.unlink(archive_path)
+
+    if removed:
+        LOG.info(
+            "Removed %d old revisions of package %s: %s",
+            len(removed),
+            package.name,
+            removed,
+        )
+
+    new_rev_count = len(revs) - len(removed)
+    if new_rev_count > config.max_package_revisions:
+        LOG.warning(
+            "Servers still using more than %d (%s) revisions of package %s",
+            config.max_package_revisions,
+            new_rev_count,
+            package.name,
+        )
+
+
 async def combined_git_rev(build_dir: str) -> Optional[str]:
     git_repos = find_git_repos(build_dir)
     LOG.debug(
@@ -141,14 +203,17 @@ async def package_build(config: Config, package: Package, force: bool = False) -
     if rev is None:
         rev = str(int(time.time()))
 
+    # Cleanup before archiving to avoid cleaning up the new version
+    cleanup_builds(config, package)
     archive_build(config, package, build_dir, rev)
 
 
 def package_revisions(
     config: Config, package: Package
 ) -> Dict[str, Dict[str, Tuple[str, int]]]:
-    archive_dir = os.path.join(config.build_path, ".archive", package.name)
+    # {<rev>: <relative_artifact_path>: (<absolute_archive_path>, <time>)}
     revs: DefaultDict[str, Dict[str, Tuple[str, int]]] = defaultdict(dict)
+    archive_dir = os.path.join(config.build_path, ".archive", package.name)
     for path in package.artifacts:
         path_head, path_tail = os.path.split(path)
         base_dir = os.path.join(archive_dir, path_head)

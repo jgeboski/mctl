@@ -172,7 +172,7 @@ class Config(ConfigObject):
         super().__init__(config_dict)
         self.build_path = self.get_str("build-path")
         self.build_niceness = self.get_int("build-niceness", 15)
-        self.max_package_versions = self.get_int("max-package-versions", 5)
+        self.max_package_revisions = self.get_int("max-package-revisions", 5)
         self.servers = {
             name: Server(server, name)
             for name, server in self.get_dict("servers").items()
@@ -188,8 +188,8 @@ class Config(ConfigObject):
             f"Invalid build niceness ([-20, 19]): {self.build_niceness}",
         )
         massert(
-            self.max_package_versions >= 1,
-            f"Invalid max package versions (>= 1): {self.max_package_versions}",
+            self.max_package_revisions >= 1,
+            f"Invalid max package revisions (>= 1): {self.max_package_revisions}",
         )
         massert(self.servers, f"No servers defined")
         massert(self.servers, f"No packages defined")

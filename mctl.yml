@@ -2,8 +2,8 @@
 build-path: /home/minecraft/.mctl-builds
 # Nice level to use for compilation processes
 build-niceness: 15
-# The maximum number of package versions to store before pruning
-max-package-versions: 5
+# The maximum number of package revisions to store before pruning
+max-package-revisions: 5
 
 # Map of servers for mctl to manage
 servers:
