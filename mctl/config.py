@@ -170,7 +170,7 @@ class Server(ConfigObject):
 class Config(ConfigObject):
     def __init__(self, config_dict: Dict[str, Any]) -> None:
         super().__init__(config_dict)
-        self.build_path = self.get_str("build-path")
+        self.data_path = self.get_str("data-path")
         self.build_niceness = self.get_int("build-niceness", 15)
         self.max_package_revisions = self.get_int("max-package-revisions", 5)
         self.servers = {

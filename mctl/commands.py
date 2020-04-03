@@ -61,7 +61,7 @@ class MctlRootGroup(click.Group):
     "-c",
     help="Configuration file to use",
     envvar="FILE",
-    default=os.path.expanduser(os.path.join("~", ".mctl.yml")),
+    default=os.path.expanduser(os.path.join("~", ".mctl/config.yml")),
 )
 @click.option(
     "--debug", "-d", help="Show debugging messages", is_flag=True,

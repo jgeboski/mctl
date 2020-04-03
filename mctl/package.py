@@ -38,7 +38,7 @@ LOG = logging.getLogger(__name__)
 
 def archive_build(config: Config, package: Package, build_dir: str, rev: str) -> None:
     build_files = get_rel_dir_files(build_dir)
-    archive_dir = os.path.join(config.build_path, ".archive")
+    archive_dir = os.path.join(config.data_path, "archive")
     for path, pattern in package.artifacts.items():
         matches = [
             build_file for build_file in build_files if pattern.match(build_file)
@@ -157,7 +157,7 @@ async def combined_git_pull(build_dir: str) -> None:
 
 async def package_build(config: Config, package: Package, force: bool = False) -> None:
     LOG.info("Building package %s", package.name)
-    build_dir = os.path.join(config.build_path, package.name)
+    build_dir = os.path.join(config.data_path, "builds", package.name)
     os.makedirs(build_dir, exist_ok=True)
 
     repo_update_coros = []
@@ -213,7 +213,7 @@ def package_revisions(
 ) -> Dict[str, Dict[str, Tuple[str, int]]]:
     # {<rev>: <relative_artifact_path>: (<absolute_archive_path>, <time>)}
     revs: DefaultDict[str, Dict[str, Tuple[str, int]]] = defaultdict(dict)
-    archive_dir = os.path.join(config.build_path, ".archive", package.name)
+    archive_dir = os.path.join(config.data_path, "archive", package.name)
     for path in package.artifacts:
         path_head, path_tail = os.path.split(path)
         base_dir = os.path.join(archive_dir, path_head)
