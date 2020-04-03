@@ -308,6 +308,7 @@ async def package_upgrade(
             os.unlink(artifact_path)
 
         LOG.debug("Linking archived artifact %s to %s", archive_path, artifact_path)
+        os.makedirs(os.path.dirname(artifact_path), exist_ok=True)
         os.symlink(archive_path, artifact_path)
 
 
