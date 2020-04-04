@@ -20,7 +20,11 @@ servers:
     packages:
       - Spigot
       - dynmap
+      - EssentialsX
       - LogBlock
+      - LuckPerms
+      - LWCX
+      - mcMMO
 
 # Map of packages referenced by the servers
 packages:
@@ -51,13 +55,37 @@ packages:
         branch: v3.0
 
     build-commands:
-      - ./dynmap/gradlew clean build
+      - cd dynmap && ./gradlew clean build
 
     artifacts:
       plugins/dynmap.jar: dynmap/target/Dynmap\-[\.0-9]+\-SNAPSHOT\-spigot\.jar
 
+  EssentialsX:
+    repositories:
+      EssentialsX:
+        url: https://github.com/EssentialsX/Essentials.git
+        type: git
+        branch: 2.x
+
+    fetch-urls:
+      Spigot/BuildTools.jar: https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar
+
+    build-commands:
+      - cd Spigot && java -jar BuildTools.jar --rev 1.8
+      - cd Spigot && java -jar BuildTools.jar --rev 1.8.3
+      - mvn -f EssentialsX clean package
+
+    artifacts:
+      plugins/EssentialsX.jar: EssentialsX/Essentials/target/EssentialsX\-[\.0-9]+\.jar
+      plugins/EssentialsXAntiBuild.jar: EssentialsX/EssentialsAntiBuild/target/EssentialsXAntiBuild\-[\.0-9]+\.jar
+      plugins/EssentialsXChat.jar: EssentialsX/EssentialsChat/target/EssentialsXChat\-[\.0-9]+\.jar
+      plugins/EssentialsXGeoIP.jar: EssentialsX/EssentialsGeoIP/target/EssentialsXGeoIP\-[\.0-9]+\.jar
+      plugins/EssentialsXProtect.jar: EssentialsX/EssentialsProtect/target/EssentialsXProtect\-[\.0-9]+\.jar
+      plugins/EssentialsXSpawn.jar: EssentialsX/EssentialsSpawn/target/EssentialsXSpawn\-[\.0-9]+\.jar
+      plugins/EssentialsXXMPP.jar: EssentialsX/EssentialsXMPP/target/EssentialsXXMPP\-[\.0-9]+\.jar
+
   LogBlock:
-    repo:
+    repositories:
       LogBlock:
         url: https://github.com/LogBlock/LogBlock.git
         type: git
@@ -67,4 +95,57 @@ packages:
       - mvn -f LogBlock clean package
 
     artifacts:
-      plugins/LogBlock.jar: LogBlock/target/LogBlock.jar
+      plugins/LogBlock.jar: LogBlock/target/LogBlock\.jar
+
+  LWCX:
+    repositories:
+      LWCX:
+        url: https://github.com/pop4959/LWCX.git
+        type: git
+        branch: master
+
+    build-commands:
+      - mvn -f LWCX clean package
+
+    artifacts:
+      plugins/LWCX.jar: LWCX/target/LWCX\-[\.0-9]+\.jar
+
+  LuckPerms:
+    repositories:
+      LuckPerms:
+        url: https://github.com/lucko/LuckPerms.git
+        type: git
+        branch: master
+
+    build-commands:
+      - cd LuckPerms && ./gradlew clean build
+
+    artifacts:
+      plugins/LuckPerms.jar: LuckPerms/bukkit/build/libs/LuckPerms\-Bukkit\-[\.0-9]+\.jar
+
+  mcMMO:
+    repositories:
+      mcMMO:
+        url: https://github.com/mcMMO-Dev/mcMMO.git
+        type: git
+        branch: master
+
+    build-commands:
+      - mvn -f mcMMO clean package
+
+    artifacts:
+      plugins/mcMMO.jar: mcMMO/target/mcMMO\.jar
+
+
+  WorldBorder:
+    repositories:
+      WorldBorder:
+        url: https://github.com/Brettflan/WorldBorder.git
+        type: git
+        branch: master
+
+    build-commands:
+      - mvn -f WorldBorder clean package
+
+    artifacts:
+      plugins/WorldBorder.jar: WorldBorder/target/WorldBorder\.jar
