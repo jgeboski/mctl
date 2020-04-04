@@ -187,15 +187,17 @@ async def run_fake_server(
     motd: str = DEFAULT_MOTD,
     icon_file: Optional[str] = None,
 ) -> None:
-    try:
-        async with aiofiles.open(icon_file, "rb") as fp:
-            icon_png_bytes = await fp.read()
-    except OSError as ex:
-        raise MctlError(f"Failed to read {icon_file}: {ex}")
+    if icon_file is not None:
+        try:
+            async with aiofiles.open(icon_file, "rb") as fp:
+                icon_png_bytes = await fp.read()
+        except OSError as ex:
+            raise MctlError(f"Failed to read {icon_file}: {ex}")
 
-    icon_png_base64 = (
-        base64.b64encode(icon_png_bytes) if icon_png_bytes else CAUTION_BASE64
-    )
+        icon_png_base64 = base64.b64encode(icon_png_bytes).decode("utf-8")
+    else:
+        icon_png_base64 = CAUTION_BASE64
+
     ping_response = {
         "version": {"name": "MCTL", "protocol": 0},
         "players": {"max": 0, "online": 0,},
