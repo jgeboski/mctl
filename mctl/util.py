@@ -110,9 +110,7 @@ def get_rel_dir_files(directory: str):
 async def git_clone_or_pull(repo_dir: str, url: str, branch: str = "master") -> None:
     git_path = os.path.join(repo_dir, ".git")
     if os.path.exists(git_path):
-        LOG.debug("Updating existing Git repo %s", repo_dir)
-        await execute_shell_check("git clean -dfx", cwd=repo_dir)
-        await execute_shell_check("git pull", cwd=repo_dir)
+        git_pull_working_branch(repo_dir)
     else:
         LOG.debug("Cloning new Git repo %s", repo_dir)
         await execute_shell_check(f"git clone '{url}' '{repo_dir}'")
@@ -122,7 +120,8 @@ async def git_clone_or_pull(repo_dir: str, url: str, branch: str = "master") -> 
 
 
 async def git_pull_working_branch(repo_dir: str) -> None:
-    LOG.debug("Updating Git repo %s on existing branch", repo_dir)
+    LOG.debug("Updating Git repo %s on working branch", repo_dir)
+    await execute_shell_check("git reset --hard", cwd=repo_dir)
     await execute_shell_check("git clean -dfx", cwd=repo_dir)
     await execute_shell_check("git pull", cwd=repo_dir)
 
