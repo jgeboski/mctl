@@ -62,6 +62,11 @@ async def server_execute(server: Server, command: str) -> None:
 
 async def server_properties(server: Server) -> Dict[str, str]:
     props_file = os.path.join(server.path, "server.properties")
+    massert(
+        os.access(props_file, os.R_OK),
+        f"server.properties for server {server.name} not readable",
+    )
+
     props: Dict[str, str] = {}
     async with aiofiles.open(props_file) as fp:
         # For whatever reason, "async for line in fp" does not work with
