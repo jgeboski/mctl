@@ -32,7 +32,7 @@ of running Minecraft servers. MCTL provides a number of features:
 %{__python3} setup.py install -O1 --skip-build --root $RPM_BUILD_ROOT
 
 %files
-%doc LICENSE mctl.yml README.md
+%doc config.yml LICENSE README.md
 %{_bindir}/mctl
 %{python3_sitelib}/mctl/
 %{python3_sitelib}/mctl*egg-info/
