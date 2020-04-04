@@ -35,7 +35,7 @@ def await_sync(func: Callable) -> Callable:
 
 async def download_url(url: str, dest_path: str) -> None:
     LOG.info(f"Downloading %s to %s", url, dest_path)
-    os.makedirs(os.path.basename(dest_path), exist_ok=True)
+    os.makedirs(os.path.dirname(dest_path), exist_ok=True)
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as res, aiofiles.open(dest_path, mode="wb") as fp:
             massert(res.status == 200, f"Failed to download {url}: HTTP {res.status}")
