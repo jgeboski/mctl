@@ -16,6 +16,8 @@ of running Minecraft servers. MCTL provides a number of features:
 * [Click](https://click.palletsprojects.com)
 * [aiofiles](https://github.com/Tinche/aiofiles)
 * [aiohttp](https://docs.aiohttp.org)
+* [Git](https://git-scm.com)
+* [GNU Screen](https://www.gnu.org/software/screen)
 * [PyYAML](https://pyyaml.org)
 
 ## Fedora

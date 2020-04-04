@@ -8,11 +8,13 @@ Source0:        https://github.com/jgeboski/%{name}/releases/download/v%{version
 BuildArch:      noarch
 BuildRequires:  python3-devel
 BuildRequires:  python3-setuptools
+Requires:       git
 Requires:       python3 >= 3.7
 Requires:       python3-aiofiles
 Requires:       python3-aiohttp
 Requires:       python3-click
 Requires:       python3-pyyaml
+Requires:       screen
 
 %description
 MCTL is a python tool for automating and reducing the operational cost
