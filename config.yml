@@ -19,12 +19,16 @@ servers:
     # List of packages used by the server
     packages:
       - Spigot
+      - DiscordSRV
       - dynmap
       - EssentialsX
       - LogBlock
       - LuckPerms
       - LWCX
       - mcMMO
+      - WorldBorder
+      - WorldEdit
+      - WorldGuard
 
 # Map of packages referenced by the servers
 packages:
@@ -43,19 +47,34 @@ packages:
       # the pattern to match reletive to the build root path.
       spigot.jar: spigot\-[\.0-9]+\.jar
 
-  dynmap:
+  DiscordSRV:
     # Repository for the package source
     repositories:
-      dynmap:
+      DiscordSRV:
         # URL of the repository
-        url: https://github.com/webbukkit/dynmap.git
+        url: https://github.com/DiscordSRV/DiscordSRV.git
         # Type of the repository (currently only git is supported)
         type: git
         # Branch to work on within the repository
+        branch: master
+
+    build-commands:
+      # https://github.com/DiscordSRV/DiscordSRV/issues/677
+      - sed -i 's|http://jcenter.bintray.com|https://jcenter.bintray.com|' DiscordSRV/pom.xml
+      - mvn -f DiscordSRV clean package
+
+    artifacts:
+      plugins/DiscordSRV.jar: DiscordSRV/target/DiscordSRV\-Build\-[\.0-9]+\.jar
+
+  dynmap:
+    repositories:
+      dynmap:
+        url: https://github.com/webbukkit/dynmap.git
+        type: git
         branch: v3.0
 
     build-commands:
-      - cd dynmap && ./gradlew clean build
+      - cd dynmap && ./gradlew clean :spigot:buildNeeded
 
     artifacts:
       plugins/dynmap.jar: dynmap/target/Dynmap\-[\.0-9]+\-SNAPSHOT\-spigot\.jar
@@ -118,7 +137,7 @@ packages:
         branch: master
 
     build-commands:
-      - cd LuckPerms && ./gradlew clean build
+      - cd LuckPerms && ./gradlew clean :bukkit:buildNeeded
 
     artifacts:
       plugins/LuckPerms.jar: LuckPerms/bukkit/build/libs/LuckPerms\-Bukkit\-[\.0-9]+\.jar
@@ -149,3 +168,30 @@ packages:
 
     artifacts:
       plugins/WorldBorder.jar: WorldBorder/target/WorldBorder\.jar
+
+  WorldEdit:
+    repositories:
+      WorldEdit:
+        url: https://github.com/EngineHub/WorldEdit.git
+        type: git
+        branch: master
+
+    build-commands:
+      - cd WorldEdit && ./gradlew clean :worldedit-bukkit:buildNeeded
+
+    artifacts:
+      plugins/WorldEdit.jar: WorldEdit/worldedit\-bukkit/build/libs/worldedit\-bukkit\-[\.0-9]+\-SNAPSHOT\-dist.jar
+
+  WorldGuard:
+    repositories:
+      WorldGuard:
+        url: https://github.com/EngineHub/WorldGuard.git
+        type: git
+        branch: master
+
+    build-commands:
+      - cd WorldGuard && ./gradlew clean :worldguard-bukkit:buildNeeded
+
+    artifacts:
+      plugins/WorldGuard.jar: WorldGuard/worldguard\-bukkit/build/libs/worldguard\-bukkit\-[\.0-9]+\-SNAPSHOT\-dist.jar
+
