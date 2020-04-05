@@ -24,6 +24,7 @@ from mctl.config import Server
 from mctl.exception import massert
 from mctl.util import execute_shell_check
 
+SCREEN_SESSION_REGEX = r"^\s+\d+\.{session_name}\s+\([^\)]+\)$"
 LOG = logging.getLogger(__name__)
 
 
@@ -41,15 +42,23 @@ def get_session_name(server: Server, fake: bool = False) -> str:
     return name
 
 
+def get_session_regex(server: Server, fake: bool = False) -> re.Pattern:
+    session_name = re.escape(get_session_name(server, fake))
+    regex = re.compile(fr"^\s+\d+\.{session_name}\s+\([^\)]+\)", re.MULTILINE)
+    return regex
+
+
 async def get_active_sessions(server: Server) -> ActiveSessions:
     stdout = await execute_shell_check("screen -ls", False)
-    session_name = get_session_name(server)
-    match = re.search(rf"^\s*\d+\.{session_name}\b", stdout, re.MULTILINE)
-    fake_session_name = get_session_name(server, True)
-    fake_match = re.search(rf"^\s*\d+\.{fake_session_name}\b", stdout, re.MULTILINE)
 
+    # Main session
+    match = get_session_regex(server).search(stdout)
     main = bool(match)
+
+    # Fake session
+    fake_match = get_session_regex(server, True).search(stdout)
     fake = bool(fake_match)
+
     return ActiveSessions(either=main or fake, main=main, fake=fake)
 
 
