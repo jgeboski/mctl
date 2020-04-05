@@ -207,6 +207,12 @@ def packages(config: Config) -> None:
     "--message", "-m", help="Restart message show to players", envvar="MESSAGE",
 )
 @click.option(
+    "--now",
+    "-n",
+    help="Restart the server now without waiting the server-timeout",
+    is_flag=True,
+)
+@click.option(
     "--server-name",
     "-s",
     help="Name of the server to act on",
@@ -215,9 +221,11 @@ def packages(config: Config) -> None:
 )
 @click.pass_obj
 @await_sync
-async def restart(config: Config, message: Optional[str], server_name: str) -> None:
+async def restart(
+    config: Config, message: Optional[str], now: bool, server_name: str
+) -> None:
     server = config.get_server(server_name)
-    await server_stop(server, message)
+    await server_stop(server, message, not now)
     await server_start(server)
 
 
@@ -271,6 +279,12 @@ async def start(
     "--message", "-m", help="Shutdown message show to players", envvar="MESSAGE",
 )
 @click.option(
+    "--now",
+    "-n",
+    help="Stop the server now without waiting the server-timeout",
+    is_flag=True,
+)
+@click.option(
     "--server-name",
     "-s",
     help="Name of the server to act on",
@@ -286,10 +300,14 @@ async def start(
 @click.pass_obj
 @await_sync
 async def stop(
-    config: Config, message: Optional[str], server_name: str, start_fake: bool
+    config: Config,
+    message: Optional[str],
+    now: bool,
+    server_name: str,
+    start_fake: bool,
 ) -> None:
     server = config.get_server(server_name)
-    await server_stop(server, message)
+    await server_stop(server, message, not now)
     if start_fake:
         await server_start_fake(server, message)
 

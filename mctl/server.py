@@ -24,7 +24,6 @@ from mctl.config import Server
 from mctl.exception import massert
 from mctl.util import execute_shell_check
 
-SCREEN_SESSION_REGEX = r"^\s+\d+\.{session_name}\s+\([^\)]+\)$"
 LOG = logging.getLogger(__name__)
 
 
@@ -139,30 +138,34 @@ async def server_start_fake(server: Server, message: Optional[str] = None) -> No
     await execute_shell_check(f"screen -S '{session_name}' -dm {command}")
 
 
-async def server_stop(server: Server, message: Optional[str]) -> None:
+async def server_stop(
+    server: Server, message: Optional[str], wait_for_stop_timeout: bool = True
+) -> None:
     active_sessions = await get_active_sessions(server)
     if active_sessions.fake:
         await server_stop_fake(server)
         return
 
-    session_name = get_session_name(server)
-    seconds_left = server.stop_timeout
-    while seconds_left > 0:
-        say_msg = f"say Server stopping in {seconds_left} seconds"
-        if message:
-            say_msg += f": {message}"
+    if wait_for_stop_timeout:
+        seconds_left = server.stop_timeout
+        while seconds_left > 0:
+            say_msg = f"say Server stopping in {seconds_left} seconds"
+            if message:
+                say_msg += f": {message}"
 
-        LOG.info("Server %s stopping in %d seconds", server.name, seconds_left)
-        await server_execute(server, say_msg)
-        wait_seconds = 5 if seconds_left >= 10 else 1
-        seconds_left -= wait_seconds
-        await asyncio.sleep(wait_seconds)
+            LOG.info("Server %s stopping in %d seconds", server.name, seconds_left)
+            await server_execute(server, say_msg)
+            wait_seconds = 5 if seconds_left >= 10 else 1
+            seconds_left -= wait_seconds
+            await asyncio.sleep(wait_seconds)
 
     LOG.info("Stopping server %s", server.name)
     await server_execute(server, "say Server stopping.")
     await server_execute(server, "save-all")
     await server_execute(server, "stop")
+
     LOG.info("Waiting for server %s to stop", server.name)
+    session_name = get_session_name(server)
     await execute_shell_check(f"screen -S '{session_name}' -x", throw_on_error=False)
 
 
