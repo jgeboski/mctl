@@ -82,52 +82,9 @@ async def execute_shell_check(
     return output
 
 
-def find_git_repos(base_dir: str) -> List[str]:
-    git_repos = set()
-    for git_repo, dir_names, _ in os.walk(base_dir):
-        if ".git" not in dir_names:
-            continue
-
-        parent_dir = os.path.dirname(git_repo)
-        if parent_dir and parent_dir in git_repos:
-            LOG.debug("Ignoring sub Git repo %s", _)
-            continue
-
-        git_repos.add(git_repo)
-
-    LOG.debug("Found %d Git repos in %s: %s", len(git_repos), base_dir, git_repos)
-    return sorted(git_repos)
-
-
 def get_rel_dir_files(directory: str):
     return [
         os.path.relpath(os.path.join(root, f), directory)
         for root, _, files in os.walk(directory)
         for f in files
     ]
-
-
-async def git_clone_or_pull(repo_dir: str, url: str, branch: str = "master") -> None:
-    git_path = os.path.join(repo_dir, ".git")
-    if os.path.exists(git_path):
-        git_pull_working_branch(repo_dir)
-    else:
-        LOG.debug("Cloning new Git repo %s", repo_dir)
-        await execute_shell_check(f"git clone '{url}' '{repo_dir}'")
-
-    LOG.debug("Updating to Git repo %s to branch %s", repo_dir, branch)
-    await execute_shell_check(f"git checkout {branch}", cwd=repo_dir)
-
-
-async def git_pull_working_branch(repo_dir: str) -> None:
-    LOG.debug("Updating Git repo %s on working branch", repo_dir)
-    await execute_shell_check("git reset --hard", cwd=repo_dir)
-    await execute_shell_check("git clean -dfx", cwd=repo_dir)
-    await execute_shell_check("git pull", cwd=repo_dir)
-
-
-async def git_rev(repo_dir: str) -> str:
-    rev = await execute_shell_check("git rev-parse --short HEAD", cwd=repo_dir)
-    rev = rev.strip()
-    LOG.debug("Got git revision %s for repo %s", rev, repo_dir)
-    return rev

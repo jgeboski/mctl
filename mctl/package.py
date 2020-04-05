@@ -14,7 +14,6 @@
 
 import asyncio
 from collections import defaultdict
-import hashlib
 import logging
 import os
 import re
@@ -23,15 +22,8 @@ from typing import DefaultDict, Dict, List, Optional, Tuple
 
 from mctl.config import Config, Package, Server
 from mctl.exception import massert
-from mctl.util import (
-    download_url,
-    execute_shell_check,
-    find_git_repos,
-    get_rel_dir_files,
-    git_clone_or_pull,
-    git_pull_working_branch,
-    git_rev,
-)
+from mctl.repository import unified_repo_revision, update_all_repos
+from mctl.util import download_url, execute_shell_check, get_rel_dir_files
 
 LOG = logging.getLogger(__name__)
 
@@ -123,51 +115,14 @@ def cleanup_builds(config: Config, package: Package) -> None:
         )
 
 
-async def combined_git_rev(build_dir: str) -> Optional[str]:
-    git_repos = find_git_repos(build_dir)
-    LOG.debug(
-        "Found %d Git repositories in %s: %s", len(git_repos), build_dir, git_repos
-    )
-    if len(git_repos) == 0:
-        return None
-
-    if len(git_repos) == 1:
-        rev = await git_rev(git_repos[0])
-        LOG.debug("Using the short hash, %s, for the revision in %s", rev, build_dir)
-        return rev
-
-    revs = await asyncio.gather(*[git_rev(repo_dir) for repo_dir in git_repos])
-    md5 = hashlib.md5()
-    md5.update(":".join(revs).encode("utf-8"))
-    hashed = md5.hexdigest()
-    rev = hashed[:7]
-    LOG.debug(
-        "Using the MD5 of all short hashes, %s, for the revision in %s", rev, build_dir
-    )
-    return rev
-
-
-async def combined_git_pull(build_dir: str) -> None:
-    git_repos = find_git_repos(build_dir)
-    LOG.debug(
-        "Updating %d all Git repositories in %s: ", len(git_repos), build_dir, git_repos
-    )
-    await asyncio.gather(*[git_pull_working_branch(repo_dir) for repo_dir in git_repos])
-
-
 async def package_build(config: Config, package: Package, force: bool = False) -> None:
     LOG.info("Building package %s", package.name)
     build_dir = os.path.join(config.data_path, "builds", package.name)
     os.makedirs(build_dir, exist_ok=True)
+    repos = package.repositories.values()
+    await update_all_repos(build_dir, repos)
 
-    repo_update_coros = []
-    for repo in package.repositories.values():
-        repo_dir = os.path.join(build_dir, repo.name)
-        if repo.type == "git":
-            repo_update_coros.append(git_clone_or_pull(repo_dir, repo.url, repo.branch))
-
-    await asyncio.gather(*repo_update_coros)
-    rev = await combined_git_rev(build_dir)
+    rev = await unified_repo_revision(build_dir, repos)
     prev_revs = package_revisions(config, package)
     if not force and rev is not None and rev in prev_revs:
         LOG.info(
@@ -199,7 +154,7 @@ async def package_build(config: Config, package: Package, force: bool = False) -
     # process will update these repos twice. Once up above to make sure
     # the same revision is not being rebuilt. And once here to make sure
     # the revision is accurate.
-    rev = await combined_git_rev(build_dir)
+    rev = await unified_repo_revision(build_dir, repos)
     if rev is None:
         rev = str(int(time.time()))
 
