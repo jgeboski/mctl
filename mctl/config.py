@@ -105,7 +105,7 @@ class Repository(ConfigObject):
         self.name = name
         self.url = self.get_str("url")
         self.type = self.get_str("type").lower()
-        self.branch = self.get_str("branch")
+        self.committish = self.get_str("committish")
 
     def validate(self) -> None:
         massert(

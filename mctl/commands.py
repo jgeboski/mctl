@@ -178,7 +178,7 @@ def packages(config: Config) -> None:
             for repo in package.repositories.values():
                 click.echo(f"    URL: {repo.url}")
                 click.echo(f"    Type: {repo.type}")
-                click.echo(f"    Branch: {repo.branch}")
+                click.echo(f"    Committish: {repo.committish}")
 
         if package.fetch_urls:
             click.echo(f"  Fetch URLs:")

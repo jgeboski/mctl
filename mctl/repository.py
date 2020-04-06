@@ -46,7 +46,7 @@ class ScmRepository(object):
     @staticmethod
     @abstractmethod
     async def update(
-        repo_dir: str, url: Optional[str] = None, branch: Optional[str] = None
+        repo_dir: str, url: Optional[str] = None, committish: Optional[str] = None
     ) -> None:
         raise NotImplementedError()
 
@@ -93,7 +93,7 @@ class GitRepository(ScmRepository):
 
     @staticmethod
     async def update(
-        repo_dir: str, url: Optional[str] = None, branch: Optional[str] = None
+        repo_dir: str, url: Optional[str] = None, committish: Optional[str] = None
     ) -> None:
         git_path = os.path.join(repo_dir, ".git")
         if os.path.exists(git_path):
@@ -111,12 +111,14 @@ class GitRepository(ScmRepository):
         await execute_shell_check("git clean -dfx", cwd=repo_dir)
 
         # Attempt to update off a detached HEAD before merging
-        if branch:
-            LOG.debug("Updating to Git repo %s to branch %s", repo_dir, branch)
-            await execute_shell_check(f"git checkout {branch}", cwd=repo_dir)
+        if committish:
+            LOG.debug("Updating to Git repo %s to committish %s", repo_dir, committish)
+            await execute_shell_check(f"git checkout {committish}", cwd=repo_dir)
 
         if not await GitRepository.has_detached_head(repo_dir):
             await execute_shell_check("git merge", cwd=repo_dir)
+        else:
+            LOG.debug("Repository %s in detached state, skipping merge", repo_dir)
 
 
 REPOSITORY_TYPES = {
@@ -182,7 +184,7 @@ async def update_all_repos(base_dir: str, repositories: Iterable[Repository]) ->
     if repo_map:
         await asyncio.gather(
             *[
-                get_repo_type(repo).update(repo_dir, repo.url, repo.branch)
+                get_repo_type(repo).update(repo_dir, repo.url, repo.committish)
                 for repo_dir, repo in repo_map.items()
             ]
         )

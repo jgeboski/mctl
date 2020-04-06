@@ -55,8 +55,8 @@ packages:
         url: https://github.com/DiscordSRV/DiscordSRV.git
         # Type of the repository (currently only git is supported)
         type: git
-        # Branch to work on within the repository
-        branch: master
+        # Branch, tag, or hash to work on within the repository
+        committish: master
 
     build-commands:
       # https://github.com/DiscordSRV/DiscordSRV/issues/677
@@ -71,7 +71,7 @@ packages:
       dynmap:
         url: https://github.com/webbukkit/dynmap.git
         type: git
-        branch: v3.0
+        committish: v3.0
 
     build-commands:
       - cd dynmap && ./gradlew clean :spigot:buildNeeded
@@ -84,7 +84,7 @@ packages:
       EssentialsX:
         url: https://github.com/EssentialsX/Essentials.git
         type: git
-        branch: 2.x
+        committish: 2.x
 
     fetch-urls:
       Spigot/BuildTools.jar: https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar
@@ -108,7 +108,7 @@ packages:
       LogBlock:
         url: https://github.com/LogBlock/LogBlock.git
         type: git
-        branch: master
+        committish: master
 
     build-commands:
       - mvn -f LogBlock clean package
@@ -121,7 +121,7 @@ packages:
       LWCX:
         url: https://github.com/pop4959/LWCX.git
         type: git
-        branch: master
+        committish: master
 
     build-commands:
       - mvn -f LWCX clean package
@@ -134,7 +134,7 @@ packages:
       LuckPerms:
         url: https://github.com/lucko/LuckPerms.git
         type: git
-        branch: master
+        committish: master
 
     build-commands:
       - cd LuckPerms && ./gradlew clean :bukkit:buildNeeded
@@ -147,7 +147,7 @@ packages:
       mcMMO:
         url: https://github.com/mcMMO-Dev/mcMMO.git
         type: git
-        branch: master
+        committish: master
 
     build-commands:
       - mvn -f mcMMO clean package
@@ -161,7 +161,7 @@ packages:
       WorldBorder:
         url: https://github.com/Brettflan/WorldBorder.git
         type: git
-        branch: master
+        committish: master
 
     build-commands:
       - mvn -f WorldBorder clean package
@@ -174,7 +174,7 @@ packages:
       WorldEdit:
         url: https://github.com/EngineHub/WorldEdit.git
         type: git
-        branch: master
+        committish: master
 
     build-commands:
       - cd WorldEdit && ./gradlew clean :worldedit-bukkit:buildNeeded
@@ -187,7 +187,7 @@ packages:
       WorldGuard:
         url: https://github.com/EngineHub/WorldGuard.git
         type: git
-        branch: master
+        committish: master
 
     build-commands:
       - cd WorldGuard && ./gradlew clean :worldguard-bukkit:buildNeeded
