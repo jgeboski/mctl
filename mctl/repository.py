@@ -74,6 +74,17 @@ class GitRepository(ScmRepository):
         return sorted(repos)
 
     @staticmethod
+    async def has_detached_head(repo_dir: str) -> bool:
+        LOG.debug("Checking if repository %s is working on a detached HEAD", repo_dir)
+        try:
+            await execute_shell_check("git symbolic-ref HEAD", cwd=repo_dir)
+            return False
+        except MctlError as ex:
+            LOG.debug("Repository %s is working on a detached HEAD", repo_dir)
+
+        return True
+
+    @staticmethod
     async def revision(repo_dir: str) -> str:
         rev = await execute_shell_check("git rev-parse --short HEAD", cwd=repo_dir)
         rev = rev.strip()
@@ -86,10 +97,8 @@ class GitRepository(ScmRepository):
     ) -> None:
         git_path = os.path.join(repo_dir, ".git")
         if os.path.exists(git_path):
-            LOG.debug("Updating Git repo %s on working branch", repo_dir)
-            await execute_shell_check("git reset --hard", cwd=repo_dir)
-            await execute_shell_check("git clean -dfx", cwd=repo_dir)
-            await execute_shell_check("git pull", cwd=repo_dir)
+            LOG.debug("Fetching updates for existing Git repo %s", repo_dir)
+            await execute_shell_check("git fetch --verbose", cwd=repo_dir)
         elif url:
             LOG.debug("Cloning new Git repo %s", repo_dir)
             await execute_shell_check(f"git clone '{url}' '{repo_dir}'")
@@ -98,9 +107,16 @@ class GitRepository(ScmRepository):
                 f"No existing repository or URL for repository in {repo_dir}"
             )
 
+        await execute_shell_check("git reset --hard", cwd=repo_dir)
+        await execute_shell_check("git clean -dfx", cwd=repo_dir)
+
+        # Attempt to update off a detached HEAD before merging
         if branch:
             LOG.debug("Updating to Git repo %s to branch %s", repo_dir, branch)
             await execute_shell_check(f"git checkout {branch}", cwd=repo_dir)
+
+        if not await GitRepository.has_detached_head(repo_dir):
+            await execute_shell_check("git merge", cwd=repo_dir)
 
 
 REPOSITORY_TYPES = {
