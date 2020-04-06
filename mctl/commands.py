@@ -18,7 +18,7 @@ import os
 import time
 from typing import Any, Callable, List, Optional
 
-from mctl.config import Config, load_config
+from mctl.config import Config, load_config, Package, Server
 from mctl.exception import MctlError
 from mctl.fake_server import (
     DEFAULT_MESSAGE,
@@ -55,6 +55,35 @@ class MctlRootGroup(click.Group):
         return super().command(*args, **kwargs)
 
 
+def get_packages(
+    config: Config,
+    all_packages: bool,
+    all_except: Optional[List[str]],
+    package_names: Optional[List[str]],
+    server: Optional[Server] = None,
+) -> List[Package]:
+    server_pkg_names = server.packages if server else list(config.packages)
+    if all_except:
+        for name in all_except:
+            config.get_package(name)
+
+        selected_names = [name for name in server_pkg_names if name not in all_except]
+    elif all_packages:
+        selected_names = server_pkg_names
+    elif package_names:
+        selected_names = package_names
+    else:
+        raise click.UsageError(
+            "--all-packages, --all-except, or --package-name required"
+        )
+
+    packages = [config.get_package(name) for name in selected_names]
+    if len(packages) == 0:
+        raise click.ClickException("No packages selected with the specified options")
+
+    return packages
+
+
 @click.group(help="Minecraft server controller", cls=MctlRootGroup)
 @click.option(
     "--config-file",
@@ -81,6 +110,13 @@ async def cli(ctx: click.Context, config_file: str, debug: bool) -> None:
     "--all-packages", "-a", help="Act on all packages", is_flag=True,
 )
 @click.option(
+    "--all-except",
+    "-e",
+    help="Act on all packages except these (can be specified multiple times)",
+    envvar="PACKAGE",
+    multiple=True,
+)
+@click.option(
     "--force",
     "-f",
     help="Force packages to build even if the revision already exists",
@@ -89,22 +125,20 @@ async def cli(ctx: click.Context, config_file: str, debug: bool) -> None:
 @click.option(
     "--package-name",
     "-p",
-    help="Name(s) of the package to act on",
+    help="Name(s) of the package to act on (can be specified multiple times)",
     envvar="PACKAGE",
     multiple=True,
 )
 @click.pass_obj
 @await_sync
 async def build(
-    config: Config, all_packages: bool, force: bool, package_name: List[str]
+    config: Config,
+    all_packages: bool,
+    all_except: Optional[List[str]],
+    force: bool,
+    package_name: Optional[List[str]],
 ) -> None:
-    if all_packages:
-        packages = list(config.packages.values())
-    elif package_name:
-        packages = [config.get_package(name) for name in package_name]
-    else:
-        raise click.UsageError("--all-packages or --package-name required")
-
+    packages = get_packages(config, all_packages, all_except, package_name)
     # Rather than re-nicing all of the subprocesses for building, just
     # re-nice everything at a top-level (including mctl).
     if hasattr(os, "nice"):
@@ -317,6 +351,13 @@ async def stop(
     "--all-packages", "-a", help="Act on all packages", is_flag=True,
 )
 @click.option(
+    "--all-except",
+    "-e",
+    help="Act on all packages except these (can be specified multiple times)",
+    envvar="PACKAGE",
+    multiple=True,
+)
+@click.option(
     "--force",
     "-f",
     help="Force packages to upgrade even if they are up-to-date",
@@ -325,7 +366,7 @@ async def stop(
 @click.option(
     "--package-name",
     "-p",
-    help="Name(s) of the package to act on",
+    help="Name(s) of the package to act on (can be specified multiple times)",
     envvar="PACKAGE",
     multiple=True,
 )
@@ -347,21 +388,13 @@ async def stop(
 async def upgrade(
     config: Config,
     all_packages: bool,
+    all_except: Optional[List[str]],
     force: bool,
-    package_name: List[str],
+    package_name: Optional[List[str]],
     revision: Optional[str],
     server_name: str,
 ) -> None:
-    if (all_packages or len(package_name) > 1) and revision:
-        raise click.UsageError("Only a single package can be used with --revision")
-
-    if all_packages:
-        packages = list(config.packages.values())
-    elif package_name:
-        packages = [config.get_package(name) for name in package_name]
-    else:
-        raise click.UsageError("--all-packages or --package-name required")
-
     server = config.get_server(server_name)
+    packages = get_packages(config, all_packages, all_except, package_name, server)
     for package in packages:
         await package_upgrade(config, server, package, revision, force)

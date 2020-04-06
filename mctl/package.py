@@ -217,6 +217,10 @@ async def package_upgrade(
     rev: Optional[str] = None,
     force: bool = False,
 ) -> None:
+    massert(
+        package.name in server.packages,
+        f"Package {package.name} not used by server {server.name}",
+    )
     revs = package_revisions(config, package)
     massert(revs, f"There are no built revisions for package {package.name}")
     if rev is None:
