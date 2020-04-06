@@ -74,7 +74,7 @@ packages:
         committish: v3.0
 
     build-commands:
-      - cd dynmap && ./gradlew clean :spigot:buildNeeded
+      - cd dynmap && ./gradlew --no-daemon clean :spigot:buildNeeded
 
     artifacts:
       plugins/dynmap.jar: dynmap/target/Dynmap\-[\.0-9]+\-SNAPSHOT\-spigot\.jar
@@ -137,7 +137,7 @@ packages:
         committish: master
 
     build-commands:
-      - cd LuckPerms && ./gradlew clean :bukkit:buildNeeded
+      - cd LuckPerms && ./gradlew --no-daemon clean :bukkit:buildNeeded
 
     artifacts:
       plugins/LuckPerms.jar: LuckPerms/bukkit/build/libs/LuckPerms\-Bukkit\-[\.0-9]+\.jar
@@ -177,7 +177,7 @@ packages:
         committish: master
 
     build-commands:
-      - cd WorldEdit && ./gradlew clean :worldedit-bukkit:buildNeeded
+      - cd WorldEdit && ./gradlew --no-daemon clean :worldedit-bukkit:buildNeeded
 
     artifacts:
       plugins/WorldEdit.jar: WorldEdit/worldedit\-bukkit/build/libs/worldedit\-bukkit\-[\.0-9]+\-SNAPSHOT\-dist.jar
@@ -190,7 +190,7 @@ packages:
         committish: master
 
     build-commands:
-      - cd WorldGuard && ./gradlew clean :worldguard-bukkit:buildNeeded
+      - cd WorldGuard && ./gradlew --no-daemon clean :worldguard-bukkit:buildNeeded
 
     artifacts:
       plugins/WorldGuard.jar: WorldGuard/worldguard\-bukkit/build/libs/worldguard\-bukkit\-[\.0-9]+\-SNAPSHOT\-dist.jar
