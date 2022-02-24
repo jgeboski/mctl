@@ -4,7 +4,7 @@ Release:        1%{?dist}
 Summary:        Minecraft server controller and plugin manager.
 License:        MIT
 URL:            https://github.com/jgeboski/%{name}
-Source0:        https://github.com/jgeboski/%{name}/releases/download/v%{version}/%{name}-%{version}.tar.gz
+Source0:        https://github.com/jgeboski/%{name}/archive/refs/tags/v%{version}.tar.gz
 BuildArch:      noarch
 BuildRequires:  python3-devel
 BuildRequires:  python3-setuptools
