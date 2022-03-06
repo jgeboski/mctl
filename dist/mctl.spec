@@ -12,7 +12,7 @@ Requires:       git
 Requires:       python3 >= 3.7
 Requires:       python3-aiofiles
 Requires:       python3-aiohttp
-Requires:       python3-click
+Requires:       python3-click >= 8
 Requires:       python3-pyyaml
 Requires:       screen
 
@@ -32,10 +32,19 @@ of running Minecraft servers. MCTL provides a number of features:
 
 %install
 %{__python3} setup.py install -O1 --skip-build --root $RPM_BUILD_ROOT
+install -Dm 0644 completion/mctl.bash \
+    $RPM_BUILD_ROOT%{_datadir}/bash-completion/completions/mctl
+install -Dm 0644 completion/mctl.fish \
+    $RPM_BUILD_ROOT%{_datadir}/fish/completions/mctl.fish
+install -Dm 0644 completion/mctl.zsh \
+    $RPM_BUILD_ROOT%{_datadir}/zsh/site-functions/_mctl
 
 %files
 %doc config.yml LICENSE README.md
 %{_bindir}/mctl
+%{_datadir}/bash-completion/completions/mctl
+%{_datadir}/fish/completions/mctl.fish
+%{_datadir}/zsh/site-functions/_mctl
 %{python3_sitelib}/mctl/
 %{python3_sitelib}/mctl*egg-info/
 

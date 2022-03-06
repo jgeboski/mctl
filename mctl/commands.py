@@ -12,6 +12,8 @@
 # The above copyright notice and this permission notice shall be included in
 # all copies or substantial portions of the Software.
 
+import sys
+
 import click
 import logging
 import os
@@ -35,6 +37,7 @@ from mctl.package import (
 from mctl.server import server_execute, server_start, server_start_fake, server_stop
 from mctl.util import await_sync
 
+DEFAULT_CONFIG_FILE = os.path.expanduser(os.path.join("~", ".mctl/config.yml"))
 LOG = logging.getLogger(__name__)
 
 
@@ -84,13 +87,37 @@ def get_packages(
     return packages
 
 
+@await_sync
+async def shell_complete_package_name(
+    context: click.Context, param: click.Parameter, incomplete: str
+) -> List[str]:
+    try:
+        config = await load_config(DEFAULT_CONFIG_FILE)
+    except Exception:
+        return []
+
+    return [package for package in config.packages if package.startswith(incomplete)]
+
+
+@await_sync
+async def shell_complete_server_name(
+    context: click.Context, param: click.Parameter, incomplete: str
+) -> List[str]:
+    try:
+        config = await load_config(DEFAULT_CONFIG_FILE)
+    except Exception:
+        return []
+
+    return [server for server in config.servers if server.startswith(incomplete)]
+
+
 @click.group(help="Minecraft server controller", cls=MctlRootGroup)
 @click.option(
     "--config-file",
     "-c",
     help="Configuration file to use",
     envvar="FILE",
-    default=os.path.expanduser(os.path.join("~", ".mctl/config.yml")),
+    default=DEFAULT_CONFIG_FILE,
 )
 @click.option(
     "--debug",
@@ -121,6 +148,7 @@ async def cli(ctx: click.Context, config_file: str, debug: bool) -> None:
     help="Act on all packages except these (can be specified multiple times)",
     envvar="PACKAGE",
     multiple=True,
+    shell_complete=shell_complete_package_name,
 )
 @click.option(
     "--force",
@@ -134,6 +162,7 @@ async def cli(ctx: click.Context, config_file: str, debug: bool) -> None:
     help="Name(s) of the package to act on (can be specified multiple times)",
     envvar="PACKAGE",
     multiple=True,
+    shell_complete=shell_complete_package_name,
 )
 @click.pass_obj
 @await_sync
@@ -165,6 +194,7 @@ async def build(
     help="Name of the server to act on",
     envvar="SERVER",
     required=True,
+    shell_complete=shell_complete_server_name,
 )
 @click.pass_obj
 @await_sync
@@ -268,6 +298,7 @@ def packages(config: Config) -> None:
     help="Name of the server to act on",
     envvar="SERVER",
     required=True,
+    shell_complete=shell_complete_server_name,
 )
 @click.pass_obj
 @await_sync
@@ -314,6 +345,7 @@ def servers(config: Config) -> None:
     help="Name of the server to act on",
     envvar="SERVER",
     required=True,
+    shell_complete=shell_complete_server_name,
 )
 @click.pass_obj
 @await_sync
@@ -346,6 +378,7 @@ async def start(
     help="Name of the server to act on",
     envvar="SERVER",
     required=True,
+    shell_complete=shell_complete_server_name,
 )
 @click.option(
     "--start-fake",
@@ -381,6 +414,7 @@ async def stop(
     help="Act on all packages except these (can be specified multiple times)",
     envvar="PACKAGE",
     multiple=True,
+    shell_complete=shell_complete_package_name,
 )
 @click.option(
     "--force",
@@ -394,6 +428,7 @@ async def stop(
     help="Name(s) of the package to act on (can be specified multiple times)",
     envvar="PACKAGE",
     multiple=True,
+    shell_complete=shell_complete_package_name,
 )
 @click.option(
     "--revision",
@@ -407,6 +442,7 @@ async def stop(
     help="Name of the server to act on",
     envvar="SERVER",
     required=True,
+    shell_complete=shell_complete_server_name,
 )
 @click.pass_obj
 @await_sync
