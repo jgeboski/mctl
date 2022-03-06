@@ -12,7 +12,7 @@
 # The above copyright notice and this permission notice shall be included in
 # all copies or substantial portions of the Software.
 
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 import asyncio
 import hashlib
 from inspect import isclass
@@ -79,7 +79,7 @@ class GitRepository(ScmRepository):
         try:
             await execute_shell_check("git symbolic-ref HEAD", cwd=repo_dir)
             return False
-        except MctlError as ex:
+        except MctlError:
             LOG.debug("Repository %s is working on a detached HEAD", repo_dir)
 
         return True

@@ -16,8 +16,7 @@ from abc import ABC, abstractmethod
 import aiofiles
 import os
 import re
-from typing import Any, Dict, IO, List, Mapping, Optional, Union
-from urllib.parse import urlparse
+from typing import Any, Dict, List, Mapping, Optional, Union
 import yaml
 
 from mctl.exception import massert, MctlError
@@ -138,7 +137,7 @@ class Package(ConfigObject):
             self.artifacts[path] = pattern
 
     def validate(self) -> None:
-        massert(self.name != ".archive", f"Package cannot be named .archive")
+        massert(self.name != ".archive", "Package cannot be named .archive")
         massert(
             self.repositories or self.fetch_urls,
             f"Package {self.name} missing repositories or fetch URLs",
@@ -191,8 +190,8 @@ class Config(ConfigObject):
             self.max_package_revisions >= 1,
             f"Invalid max package revisions (>= 1): {self.max_package_revisions}",
         )
-        massert(self.servers, f"No servers defined")
-        massert(self.servers, f"No packages defined")
+        massert(self.servers, "No servers defined")
+        massert(self.servers, "No packages defined")
 
         for package in self.packages.values():
             package.validate()

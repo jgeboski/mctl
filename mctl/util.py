@@ -18,9 +18,9 @@ import asyncio
 import functools
 import logging
 import os
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Optional
 
-from mctl.exception import massert, MctlError
+from mctl.exception import massert
 
 LOG = logging.getLogger(__name__)
 
@@ -34,7 +34,7 @@ def await_sync(func: Callable) -> Callable:
 
 
 async def download_url(url: str, dest_path: str) -> None:
-    LOG.info(f"Downloading %s to %s", url, dest_path)
+    LOG.info("Downloading %s to %s", url, dest_path)
     os.makedirs(os.path.dirname(dest_path), exist_ok=True)
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as res, aiofiles.open(dest_path, mode="wb") as fp:

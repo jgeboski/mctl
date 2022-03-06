@@ -228,15 +228,15 @@ def packages(config: Config) -> None:
                 click.echo(f"    Committish: {repo.committish}")
 
         if package.fetch_urls:
-            click.echo(f"  Fetch URLs:")
+            click.echo("  Fetch URLs:")
             for path, url in package.fetch_urls.items():
                 click.echo(f"    - {path}: {url}")
 
-        click.echo(f"  Build Commands:")
+        click.echo("  Build Commands:")
         for command in package.build_commands:
             click.echo(f"    - {command}")
 
-        click.echo(f"  Artifacts:")
+        click.echo("  Artifacts:")
         for name, regex in package.artifacts.items():
             click.echo(f"    - {regex} -> {name}")
 
@@ -287,7 +287,7 @@ def servers(config: Config) -> None:
         click.echo(f"  Path: {server.path}")
         click.echo(f"  Command: {server.command}")
         click.echo(f"  Stop Timeout: {server.stop_timeout}")
-        click.echo(f"  Packages:")
+        click.echo("  Packages:")
 
         for package in server.packages:
             click.echo(f"    - {package}")
