@@ -16,10 +16,16 @@ from abc import ABC, abstractmethod
 import aiofiles
 import os
 import re
-from typing import Any, Dict, List, Mapping, Optional, Union
+from typing import Any, Dict, List, Mapping, Optional, TYPE_CHECKING, Union
 import yaml
 
 from mctl.exception import massert, MctlError
+
+try:
+    from yaml import CLoader as YamlLoader
+except ImportError:
+    if not TYPE_CHECKING:
+        from yaml import Loader as YamlLoader
 
 
 def dump_config_object_to_lines(
@@ -217,7 +223,7 @@ async def load_config(config_file: str) -> Config:
     except OSError as ex:
         raise MctlError(f"Failed to read {config_file}: {ex}")
 
-    config_dict = yaml.load(config_text)
+    config_dict = yaml.load(config_text, YamlLoader)
     massert(config_dict, "Empty or missing config")
     config = Config(config_dict)
     config.validate()
