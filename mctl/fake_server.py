@@ -200,7 +200,10 @@ async def run_fake_server(
 
     ping_response = {
         "version": {"name": "MCTL", "protocol": 0},
-        "players": {"max": 0, "online": 0,},
+        "players": {
+            "max": 0,
+            "online": 0,
+        },
         "description": {"text": motd},
         "text": message,
         "bold": "true",

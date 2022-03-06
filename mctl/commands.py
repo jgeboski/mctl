@@ -93,7 +93,10 @@ def get_packages(
     default=os.path.expanduser(os.path.join("~", ".mctl/config.yml")),
 )
 @click.option(
-    "--debug", "-d", help="Show debugging messages", is_flag=True,
+    "--debug",
+    "-d",
+    help="Show debugging messages",
+    is_flag=True,
 )
 @click.pass_context
 @await_sync
@@ -107,7 +110,10 @@ async def cli(ctx: click.Context, config_file: str, debug: bool) -> None:
 
 @cli.command(help="Build one or more packages")
 @click.option(
-    "--all-packages", "-a", help="Act on all packages", is_flag=True,
+    "--all-packages",
+    "-a",
+    help="Act on all packages",
+    is_flag=True,
 )
 @click.option(
     "--all-except",
@@ -169,7 +175,10 @@ async def execute(config: Config, command: List[str], server_name: str) -> None:
 
 @cli.command("fake-server", help="Run the fake server in the foreground")
 @click.option(
-    "--listen-address", "-l", help="IPv4/IPv6 address to listen on", envvar="ADDRESS",
+    "--listen-address",
+    "-l",
+    help="IPv4/IPv6 address to listen on",
+    envvar="ADDRESS",
 )
 @click.option("--icon-file", "-i", help="PNG icon to use", envvar="FILE")
 @click.option(
@@ -187,7 +196,11 @@ async def execute(config: Config, command: List[str], server_name: str) -> None:
     default=DEFAULT_MOTD,
 )
 @click.option(
-    "--port", "-p", help="Port to listen on", envvar="PORT", default=DEFAULT_PORT,
+    "--port",
+    "-p",
+    help="Port to listen on",
+    envvar="PORT",
+    default=DEFAULT_PORT,
 )
 @click.pass_obj
 @await_sync
@@ -238,7 +251,10 @@ def packages(config: Config) -> None:
 
 @cli.command(help="Restart a server")
 @click.option(
-    "--message", "-m", help="Restart message show to players", envvar="MESSAGE",
+    "--message",
+    "-m",
+    help="Restart message show to players",
+    envvar="MESSAGE",
 )
 @click.option(
     "--now",
@@ -281,7 +297,10 @@ def servers(config: Config) -> None:
 
 @cli.command(help="Start a server")
 @click.option(
-    "--fake", "-k", help="Start the fake server instead", is_flag=True,
+    "--fake",
+    "-k",
+    help="Start the fake server instead",
+    is_flag=True,
 )
 @click.option(
     "--fake-message",
@@ -310,7 +329,10 @@ async def start(
 
 @cli.command(help="Stop a server")
 @click.option(
-    "--message", "-m", help="Shutdown message show to players", envvar="MESSAGE",
+    "--message",
+    "-m",
+    help="Shutdown message show to players",
+    envvar="MESSAGE",
 )
 @click.option(
     "--now",
@@ -348,7 +370,10 @@ async def stop(
 
 @cli.command(help="Upgrade one or more packages")
 @click.option(
-    "--all-packages", "-a", help="Act on all packages", is_flag=True,
+    "--all-packages",
+    "-a",
+    help="Act on all packages",
+    is_flag=True,
 )
 @click.option(
     "--all-except",

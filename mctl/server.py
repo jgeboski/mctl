@@ -43,7 +43,7 @@ def get_session_name(server: Server, fake: bool = False) -> str:
 
 def get_session_regex(server: Server, fake: bool = False) -> re.Pattern:
     session_name = re.escape(get_session_name(server, fake))
-    regex = re.compile(fr"^\s+\d+\.{session_name}\s+\([^\)]+\)", re.MULTILINE)
+    regex = re.compile(rf"^\s+\d+\.{session_name}\s+\([^\)]+\)", re.MULTILINE)
     return regex
 
 

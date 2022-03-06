@@ -62,7 +62,11 @@ async def execute_shell_check(
     LOG.debug("Executing shell command: '%s' in %s", command, cwd)
     output_type = asyncio.subprocess.PIPE if hide_ouput else None
     proc = await asyncio.create_subprocess_shell(
-        command, stdout=output_type, stderr=output_type, cwd=cwd, **kwargs,
+        command,
+        stdout=output_type,
+        stderr=output_type,
+        cwd=cwd,
+        **kwargs,
     )
 
     if hide_ouput:
