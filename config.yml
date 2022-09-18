@@ -11,18 +11,18 @@ servers:
     # Absolute root path for the server
     path: /home/minecraft/example
     # Command used to start the server in GNU screen.
-    command: java -Xmx1G -server -jar spigot.jar
+    command: java -Xmx1G -server --add-modules=jdk.incubator.vector -jar purpur.jar
     # Timeout (in seconds) to wait before stopping the server. A server
     # message will be printed every 5 seconds before the server is
     # stopped. Disable this feature by setting the value to 0.
     stop-timeout: 60
     # List of packages used by the server
     packages:
-      - Spigot
+      - Purpur
+      - BlueMap
+      - CoreProtect
       - DiscordSRV
-      - dynmap
       - EssentialsX
-      - LogBlock
       - LuckPerms
       - LWCX
       - mcMMO
@@ -32,52 +32,63 @@ servers:
 
 # Map of packages referenced by the servers
 packages:
-  Spigot:
-    # List of files to fetch
-    fetch-urls:
-      BuildTools.jar: https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar
+  Purpur:
+    # Repository for the package source
+    repositories:
+      Purpur:
+        url: https://github.com/PurpurMC/Purpur.git
+        type: git
+        committish: ver/1.19.2
 
     # List of build commands to serially execute in order
     build-commands:
-      - java -jar BuildTools.jar --rev 1.15.2
+      - ./Purpur/gradlew --no-daemon -p Purpur clean applyPatches
+      - ./Purpur/gradlew --no-daemon -p Purpur build createReobfPaperclipJar
 
     # List of artifacts to archive and install
     artifacts:
       # Key is the path relevative to the server root path. The key is
       # the pattern to match reletive to the build root path.
-      spigot.jar: spigot\-[\.0-9]+\.jar
+      purpur.jar: Purpur/build/libs/purpur\-paperclip\-[\.0-9]+\-R[\.0-9]+\-SNAPSHOT\-reobf\.jar
 
-  DiscordSRV:
-    # Repository for the package source
+  BlueMap:
     repositories:
-      DiscordSRV:
-        # URL of the repository
-        url: https://github.com/DiscordSRV/DiscordSRV.git
-        # Type of the repository (currently only git is supported)
+      BlueMap:
+        url: https://github.com/BlueMap-Minecraft/BlueMap.git
         type: git
-        # Branch, tag, or hash to work on within the repository
         committish: master
 
     build-commands:
-      # https://github.com/DiscordSRV/DiscordSRV/issues/677
-      - sed -i 's|http://jcenter.bintray.com|https://jcenter.bintray.com|' DiscordSRV/pom.xml
+      - ./BlueMap/gradlew --no-daemon -p BlueMap clean build
+
+    artifacts:
+      plugins/BlueMap.jar: BlueMap/build/release/BlueMap\-[\.0-9]+\-spigot\.jar
+
+  CoreProtect:
+    repositories:
+      CoreProtect:
+        url: https://github.com/PlayPro/CoreProtect.git
+        type: git
+        committish: master
+
+    build-commands:
+      - mvn -f CoreProtect -D project.branch=master clean package
+
+    artifacts:
+      plugins/CoreProtect.jar: CoreProtect/target/CoreProtect\-[\.0-9]+\.jar
+
+  DiscordSRV:
+    repositories:
+      DiscordSRV:
+        url: https://github.com/DiscordSRV/DiscordSRV.git
+        type: git
+        committish: master
+
+    build-commands:
       - mvn -f DiscordSRV clean package
 
     artifacts:
-      plugins/DiscordSRV.jar: DiscordSRV/target/DiscordSRV\-Build\-[\.0-9]+\.jar
-
-  dynmap:
-    repositories:
-      dynmap:
-        url: https://github.com/webbukkit/dynmap.git
-        type: git
-        committish: v3.0
-
-    build-commands:
-      - cd dynmap && ./gradlew --no-daemon clean :spigot:buildNeeded
-
-    artifacts:
-      plugins/dynmap.jar: dynmap/target/Dynmap\-[\.0-9]+\-SNAPSHOT\-spigot\.jar
+      plugins/DiscordSRV.jar: DiscordSRV/target/DiscordSRV\-Build\-[\.0-9]+\-[a-z0-9]+\.jar
 
   EssentialsX:
     repositories:
@@ -86,35 +97,31 @@ packages:
         type: git
         committish: 2.x
 
-    fetch-urls:
-      Spigot/BuildTools.jar: https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar
-
     build-commands:
-      - cd Spigot && java -jar BuildTools.jar --rev 1.8
-      - cd Spigot && java -jar BuildTools.jar --rev 1.8.3
-      - mvn -f EssentialsX clean package
+      - ./EssentialsX/gradlew --no-daemon -p EssentialsX clean build
 
     artifacts:
-      plugins/EssentialsX.jar: EssentialsX/Essentials/target/EssentialsX\-[\.0-9]+\.jar
-      plugins/EssentialsXAntiBuild.jar: EssentialsX/EssentialsAntiBuild/target/EssentialsXAntiBuild\-[\.0-9]+\.jar
-      plugins/EssentialsXChat.jar: EssentialsX/EssentialsChat/target/EssentialsXChat\-[\.0-9]+\.jar
-      plugins/EssentialsXGeoIP.jar: EssentialsX/EssentialsGeoIP/target/EssentialsXGeoIP\-[\.0-9]+\.jar
-      plugins/EssentialsXProtect.jar: EssentialsX/EssentialsProtect/target/EssentialsXProtect\-[\.0-9]+\.jar
-      plugins/EssentialsXSpawn.jar: EssentialsX/EssentialsSpawn/target/EssentialsXSpawn\-[\.0-9]+\.jar
-      plugins/EssentialsXXMPP.jar: EssentialsX/EssentialsXMPP/target/EssentialsXXMPP\-[\.0-9]+\.jar
+      plugins/EssentialsX.jar: EssentialsX/Essentials/build/libs/EssentialsX\-[\.0-9]+\-dev\+[0-9]+\-[a-z0-9]+\.jar
+      plugins/EssentialsXAntiBuild.jar: EssentialsX/EssentialsAntiBuild/build/libs/EssentialsXAntiBuild\-[\.0-9]+\-dev\+[0-9]+\-[a-z0-9]+\.jar
+      plugins/EssentialsXChat.jar: EssentialsX/EssentialsChat/build/libs/EssentialsXChat\-[\.0-9]+\-dev\+[0-9]+\-[a-z0-9]+\.jar
+      plugins/EssentialsXDiscord.jar: EssentialsX/EssentialsDiscord/build/libs/EssentialsXDiscord\-[\.0-9]+\-dev\+[0-9]+\-[a-z0-9]+\.jar
+      plugins/EssentialsXGeoIP.jar: EssentialsX/EssentialsGeoIP/build/libs/EssentialsXGeoIP\-[\.0-9]+\-dev\+[0-9]+\-[a-z0-9]+\.jar
+      plugins/EssentialsXProtect.jar: EssentialsX/EssentialsProtect/build/libs/EssentialsXProtect\-[\.0-9]+\-dev\+[0-9]+\-[a-z0-9]+\.jar
+      plugins/EssentialsXSpawn.jar: EssentialsX/EssentialsSpawn/build/libs/EssentialsXSpawn\-[\.0-9]+\-dev\+[0-9]+\-[a-z0-9]+\.jar
+      plugins/EssentialsXXMPP.jar: EssentialsX/EssentialsXMPP/build/libs/EssentialsXXMPP\-[\.0-9]+\-dev\+[0-9]+\-[a-z0-9]+\.jar
 
-  LogBlock:
+  LuckPerms:
     repositories:
-      LogBlock:
-        url: https://github.com/LogBlock/LogBlock.git
+      LuckPerms:
+        url: https://github.com/lucko/LuckPerms.git
         type: git
         committish: master
 
     build-commands:
-      - mvn -f LogBlock clean package
+      - ./LuckPerms/gradlew --no-daemon -p LuckPerms clean :bukkit:loader:buildNeeded
 
     artifacts:
-      plugins/LogBlock.jar: LogBlock/target/LogBlock\.jar
+      plugins/LuckPerms.jar: LuckPerms/bukkit/loader/build/libs/LuckPerms\-Bukkit\-[\.0-9]+\.jar
 
   LWCX:
     repositories:
@@ -129,19 +136,6 @@ packages:
     artifacts:
       plugins/LWCX.jar: LWCX/target/LWCX\-[\.0-9]+\.jar
 
-  LuckPerms:
-    repositories:
-      LuckPerms:
-        url: https://github.com/lucko/LuckPerms.git
-        type: git
-        committish: master
-
-    build-commands:
-      - cd LuckPerms && ./gradlew --no-daemon clean :bukkit:buildNeeded
-
-    artifacts:
-      plugins/LuckPerms.jar: LuckPerms/bukkit/build/libs/LuckPerms\-Bukkit\-[\.0-9]+\.jar
-
   mcMMO:
     repositories:
       mcMMO:
@@ -154,7 +148,6 @@ packages:
 
     artifacts:
       plugins/mcMMO.jar: mcMMO/target/mcMMO\.jar
-
 
   WorldBorder:
     repositories:
@@ -177,10 +170,10 @@ packages:
         committish: master
 
     build-commands:
-      - cd WorldEdit && ./gradlew --no-daemon clean :worldedit-bukkit:buildNeeded
+      - ./WorldEdit/gradlew --no-daemon -p WorldEdit clean :worldedit-bukkit:buildNeeded
 
     artifacts:
-      plugins/WorldEdit.jar: WorldEdit/worldedit\-bukkit/build/libs/worldedit\-bukkit\-[\.0-9]+\-SNAPSHOT\-dist.jar
+      plugins/WorldEdit.jar: WorldEdit/worldedit\-bukkit/build/libs/worldedit\-bukkit\-[\.0-9]+\-SNAPSHOT\-dist\.jar
 
   WorldGuard:
     repositories:
@@ -190,8 +183,7 @@ packages:
         committish: master
 
     build-commands:
-      - cd WorldGuard && ./gradlew --no-daemon clean :worldguard-bukkit:buildNeeded
+      - ./WorldGuard/gradlew --no-daemon -p WorldGuard clean :worldguard-bukkit:buildNeeded
 
     artifacts:
-      plugins/WorldGuard.jar: WorldGuard/worldguard\-bukkit/build/libs/worldguard\-bukkit\-[\.0-9]+\-SNAPSHOT\-dist.jar
-
+      plugins/WorldGuard.jar: WorldGuard/worldguard\-bukkit/build/libs/worldguard\-bukkit\-[\.0-9]+\-SNAPSHOT\-dist\.jar
