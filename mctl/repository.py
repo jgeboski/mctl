@@ -98,10 +98,14 @@ class GitRepository(ScmRepository):
         git_path = os.path.join(repo_dir, ".git")
         if os.path.exists(git_path):
             LOG.debug("Fetching updates for existing Git repo %s", repo_dir)
-            await execute_shell_check("git fetch --verbose", cwd=repo_dir)
+            await execute_shell_check(
+                "git fetch --recurse-submodules=yes --verbose", cwd=repo_dir
+            )
         elif url:
             LOG.debug("Cloning new Git repo %s", repo_dir)
-            await execute_shell_check(f"git clone '{url}' '{repo_dir}'")
+            await execute_shell_check(
+                f"git clone --recurse-submodules '{url}' '{repo_dir}'"
+            )
         else:
             raise MctlError(
                 f"No existing repository or URL for repository in {repo_dir}"
