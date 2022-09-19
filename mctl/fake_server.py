@@ -138,26 +138,42 @@ async def handle_packet(reader: asyncio.StreamReader) -> Tuple[bytes, int]:
 
 
 async def handle_ping(
-    packet_data: bytes, writer: asyncio.StreamWriter, ping_response: Dict[str, Any]
+    packet_data: bytes,
+    writer: asyncio.StreamWriter,
+    ping_response: Dict[str, Any],
+    login_response: Dict[str, Any],
 ) -> None:
     client_addr, _ = writer.get_extra_info("peername")
     packet_data, client_version = unpack_varint(packet_data)
     packet_data, with_addr = unpack_str(packet_data)
     packet_data, with_port = unpack_short(packet_data)
     packet_data, next_state = unpack_varint(packet_data)
+
+    action = "tried an unknown action"
+    response: Dict[str, Any] = {}
+    if next_state == 1:
+        action = "pinged"
+        response = copy.deepcopy(ping_response)
+        response["version"]["protocol"] = client_version
+    elif next_state == 2:
+        action = "logged in"
+        response = login_response
+    else:
+        raise ProtocolError(f"Unsupported next state: {next_state}")
+
     LOG.info(
         "Client %s %s via address %s on port %d using version %d",
         client_addr,
-        "pinged" if next_state == 1 else "logged in",
+        action,
         with_addr,
         with_port,
         client_version,
     )
 
-    ping_response = copy.deepcopy(ping_response)
-    ping_response["version"]["protocol"] = client_version
-    ping_json = json.dumps(ping_response)
-    await pack_and_send(writer, 0, pack_str(ping_json))
+    # Explicitly avoid any sort of white-spacing in the JSON. The client cannot
+    # parse the JSON with any white-spacing outside of a JSON string.
+    response_json = json.dumps(response, indent=None, separators=(",", ":"))
+    await pack_and_send(writer, 0, pack_str(response_json))
     writer.close()
 
 
@@ -165,13 +181,19 @@ async def connection_handler(
     reader: asyncio.StreamReader,
     writer: asyncio.StreamWriter,
     ping_response: Dict[str, Any],
+    login_response: Dict[str, Any],
 ) -> None:
     client_addr, _ = writer.get_extra_info("peername")
     LOG.debug("New connection from %s", client_addr)
     try:
         packet_data, packet_id = await handle_packet(reader)
         if packet_id == 0:
-            await handle_ping(packet_data, writer, ping_response)
+            await handle_ping(
+                packet_data,
+                writer=writer,
+                ping_response=ping_response,
+                login_response=login_response,
+            )
         else:
             raise ProtocolError(f"Unsupported packet ID 0x{packet_id:20x}")
     except ProtocolError as ex:
@@ -199,19 +221,27 @@ async def run_fake_server(
         icon_png_base64 = CAUTION_BASE64
 
     ping_response = {
-        "version": {"name": "MCTL", "protocol": 0},
+        "description": {"text": motd},
+        "favicon": f"data:image/png;base64,{icon_png_base64}",
         "players": {
             "max": 0,
             "online": 0,
+            "sample": [],
         },
-        "description": {"text": motd},
+        "version": {"name": "MCTL", "protocol": 0},
+    }
+    login_response = {
+        "bold": True,
+        "color": "red",
         "text": message,
-        "bold": "true",
-        "favicon": f"data:image/png;base64,{icon_png_base64}",
     }
 
     LOG.info("Starting fake-server on %s, port %d", listen_address, port)
-    conn_cb = functools.partial(connection_handler, ping_response=ping_response)
+    conn_cb = functools.partial(
+        connection_handler,
+        ping_response=ping_response,
+        login_response=login_response,
+    )
     server = await asyncio.start_server(conn_cb, listen_address, port)
     async with server:
         await server.serve_forever()
