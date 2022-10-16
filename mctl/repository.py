@@ -65,7 +65,14 @@ class GitRepository(ScmRepository):
 
             parent_dir = os.path.dirname(git_repo)
             if parent_dir and parent_dir in repos:
-                LOG.debug("Ignoring sub Git repo %s", _)
+                LOG.debug("Ignoring already tracked Git repo %s", git_repo)
+                continue
+
+            branches_str = await execute_shell_check(
+                "git status --short --branch", cwd=git_repo
+            )
+            if "..." not in branches_str:
+                LOG.debug("Ignoring repo %s without remote branch", git_repo)
                 continue
 
             repos.add(git_repo)
