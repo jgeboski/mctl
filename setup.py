@@ -16,7 +16,7 @@ from setuptools import setup
 
 setup(
     name="mctl",
-    version="2.2.0",
+    version="2.2.1",
     url="https://github.com/jgeboski/mctl",
     author="James Geboski",
     author_email="jgeboski@gmail.com",
